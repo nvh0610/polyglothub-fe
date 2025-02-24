@@ -1,24 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import * as React from "react";
+
+import "./App.css";
+import Home from "./views/home/Home";
+import Dashboard from "./views/dashboard/Dashboard";
+import Vocabulary from "./views/vocabulary/Vocabulary";
+import { CssBaseline } from "@mui/material";
+import CustomThemeProvider from "./components/base/HomeDefault";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />,
+  },
+  {
+    path: "/vocabulary",
+    element: <Vocabulary />,
+  }
+]);
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <CustomThemeProvider>
+      <CssBaseline />
+      {/* <AuthProvider> */}
+        <RouterProvider router={router} />
+      {/* </AuthProvider> */}
+    </CustomThemeProvider>
   );
 }
 
