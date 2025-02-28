@@ -1,110 +1,146 @@
-import { Link } from "react-router-dom";
-import React from "react";
+import * as React from "react";
+import PropTypes from "prop-types";
 import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import CssBaseline from "@mui/material/CssBaseline";
+import Divider from "@mui/material/Divider";
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import { Container } from "@mui/material";
 import Button from "@mui/material/Button";
-const logoStyle = {
-  width: "40px",
-  height: "40px",
-  cursor: "pointer",
-  marginLeft: "10px",
-  marginRight: "5px",
-};
+import { useNavigate } from "react-router-dom";
 
-export default function AppAppBar({ currentPage, login }) {
-  // const [openDrawer, setOpenDrawer] = React.useState(false);
 
-  // const [openLoginDialog, setOpenLoginDialog] = React.useState(false);
-  // const [idToken, setIdToken] = React.useState(
-  //   localStorage.getItem("id_token"),
-  // );
-  // const [accountUser, setAccountUser] = React.useState({});
-  // const auth = useAuth();
+const drawerWidth = 240;
+const navItems = [
+  { label: "Category", path: "/category" },
+  { label: "Grammar", path: "/grammar" },
+  { label: "Flashcard", path: "/flashcard" },
+  { label: "Dashboard", path: "/dashboard" },
+];
 
-  // const handleLoginButtonClick = () => {
-  //   setOpenLoginDialog(true);
-  // };
+function AppAppBar(props) {
+  const { window } = props;
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const navigate = useNavigate(); // Hook để điều hướng
 
-  // const handleLoginDialogClose = () => {
-  //   setOpenLoginDialog(false);
-  // };
+  const handleDrawerToggle = () => {
+    setMobileOpen((prevState) => !prevState);
+  };
 
-  // const toggleDrawer = (newOpen) => () => {
-  //   setOpenDrawer(newOpen);
-  // };
+  const handleNavigation = (path) => {
+    navigate(path);
+    setMobileOpen(false); // Đóng menu trên mobile sau khi chọn
+  };
 
-  // React.useEffect(() => {
-  //   if (auth.user) {
-  //     setAccountUser(auth.user);
-  //   }
-  // }, [auth.user]);
+  const drawer = (
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
+      <Typography variant="h6" sx={{ my: 2 }}>
+        PolyglotHub
+      </Typography>
+      <Divider />
+      <List>
+        {navItems.map((item) => (
+          <ListItem key={item.label} disablePadding>
+            <ListItemButton onClick={() => handleNavigation(item.path)} sx={{ textAlign: "center" }}>
+              <ListItemText primary={item.label} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
 
-  const menuItems = [
-    { name: "Vocabulary", path: "/vocabulary" },
-    { name: "Grammar", path: "/grammar" },
-    { name: "Flashcards", path: "/flashcards" },
-    { name: "Dashboard", path: "/dashboard" },
-  ];
+  const container =
+    window !== undefined ? () => window().document.body : undefined;
 
   return (
-    <AppBar
-      position="fixed"
-      elevation={4}
-      sx={{
-        bgcolor: "white",
-        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-        top: 0,
-      }}
-    >
-      <Toolbar sx={{ width: "100%", display: "flex", alignItems: "center" }}>
-        {/* Logo / Brand name bên trái */}
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
-            <span style={{ color: "green" }}>Study</span>
-            <span style={{ color: "orange" }}>Words</span>
-            <span style={{ color: "blue" }}>.ir</span>
-          </Typography>
-        </Box>
+    <Box sx={{ display: "flex" }}>
+      <CssBaseline />
+      <AppBar position="fixed" sx={{ backgroundColor: "#1976d2" }}>
+        <Container maxWidth="lg">
+          <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+            {/* Icon menu khi màn hình nhỏ */}
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ display: { sm: "none" } }}
+            >
+              <MenuIcon />
+            </IconButton>
 
-        {/* Menu chính ở giữa */}
-        <Box sx={{ flex: 1, display: "flex", justifyContent: "center", gap: 2 }}>
-          {menuItems.map((item) => (
-            <Button
-              key={item.name}
-              component={Link} // Sử dụng Link của react-router-dom
-              to={item.path}   // Đường dẫn tương ứng
+            {/* Logo */}
+            <Typography
+              variant="h6"
+              component="div"
+              sx={{ flexGrow: 1, fontWeight: "bold" }}
+            >
+              PolyglotHub
+            </Typography>
+
+            {/* Navbar items */}
+            <Box
               sx={{
-                color: "green",
-                fontSize: "1.2rem",
-                textTransform: "none",
-                transition: "transform 0.2s, text-decoration 0.2s",
-                "&:hover": {
-                  transform: "scale(1.05)",
-                  textDecoration: "underline",
-                  backgroundColor: "transparent",
-                },
+                display: { xs: "none", sm: "flex" },
+                justifyContent: "center",
+                gap: "2rem",
               }}
             >
-              {item.name}
-            </Button>
-          ))}
-        </Box>
+              {navItems.map((item) => (
+                <Button
+                  key={item.label}
+                  onClick={() => handleNavigation(item.path)}
+                  sx={{ color: "#fff", fontSize: "1rem" }}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
 
-        {/* Nút Log in bên phải */}
-        <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ textTransform: "none" }}
-            component={Link}
-            to="/login" // Nếu có trang login
-          >
-            Log in
-          </Button>
-        </Box>
-      </Toolbar>
-    </AppBar>
+      {/* Sidebar cho mobile */}
+      <nav>
+        <Drawer
+          container={container}
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Cải thiện hiệu suất khi mở trên mobile
+          }}
+          sx={{
+            display: { xs: "block", sm: "none" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
+          }}
+        >
+          {drawer}
+        </Drawer>
+      </nav>
+
+      {/* Nội dung chính */}
+      <Box component="main" sx={{ p: 3, width: "100%" }}>
+        <Toolbar />
+      </Box>
+    </Box>
   );
 }
+
+AppAppBar.propTypes = {
+  window: PropTypes.func,
+};
+
+export default AppAppBar;

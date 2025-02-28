@@ -1,43 +1,82 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import React from "react";
+import * as React from "react";
+import { styled } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
 
-export default function CustomizedTables() {
-  // Mock data
-  const data = [
-    { username: "User1", monthlyBudget: 50, totalClaimed: 20, amneyUser: true },
-    { username: "User2", monthlyBudget: 100, totalClaimed: 80, amneyUser: false },
-    { username: "User3", monthlyBudget: 75, totalClaimed: 25, amneyUser: true },
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.MuiTableCell-head`]: {
+    fontSize: 17,
+    backgroundColor: "#1976d2",
+    color: theme.palette.common.white,
+    textAlign: "center", // Căn giữa tiêu đề cột
+  },
+  [`&.${TableCell.body}`]: {
+    fontSize: 20,
+    textAlign: "center", // Căn giữa nội dung ô
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.action.hover,
+  },
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+  "&:hover": {
+    backgroundColor: "#c4e1ff",
+    color: theme.palette.common.white,
+  },
+}));
+
+export default function CustomTable({ data }) {
+  const columns = [
+    { key: "stt", label: "STT", align: "center" }, // Cột STT
+    ...Object.keys(data[0] || {}).map((key) => ({
+      key,
+      label: key
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+      align: "center",
+    })),
   ];
 
   return (
     <TableContainer component={Paper}>
-      <Table>
-        <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+      <Table sx={{ tableLayout: "auto", width: "100%" }} aria-label="customized table">
+        <TableHead>
           <TableRow>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              Username
-            </TableCell>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              Monthly Budget
-            </TableCell>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              Total Claimed
-            </TableCell>
-            <TableCell align="center" sx={{ fontWeight: "bold" }}>
-              Amney User
-            </TableCell>
+            {columns.map((column) => (
+              <StyledTableCell key={column.key} align={column.align || "left"}>
+                {column.label}
+              </StyledTableCell>
+            ))}
           </TableRow>
         </TableHead>
         <TableBody>
-          {data.map((row, idx) => (
-            <TableRow key={idx}>
-              <TableCell align="center">{row.username}</TableCell>
-              <TableCell align="center">${row.monthlyBudget}</TableCell>
-              <TableCell align="center">${row.totalClaimed}</TableCell>
-              <TableCell align="center">
-                {row.amneyUser ? "Yes" : "No"}
-              </TableCell>
-            </TableRow>
+          {data.map((row, index) => (
+            <StyledTableRow key={index}>
+              {columns.map((column) => (
+                <StyledTableCell
+                  key={column.key}
+                  align={column.align || "left"}
+                >
+                  {column.key === "stt"
+                    ? index + 1
+                    : typeof row[column.key] === "boolean"
+                    ? row[column.key]
+                      ? "Yes"
+                      : "No"
+                    : row[column.key]}
+                </StyledTableCell>
+              ))}
+            </StyledTableRow>
           ))}
         </TableBody>
       </Table>

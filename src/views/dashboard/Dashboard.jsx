@@ -2,11 +2,116 @@ import AppAppBar from "../../components/base/AppAppBar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import CustomizedTables from "./CustomizeTable";
-import FlashcardLeaderboard from "./FlashcardLeaderboard";
-import WrongAnswersCard from "./WrongAnswersCard";
+import CustomTable from "./CustomizeTable";
+import ChartComponent from "./Chart";
 import Footer from "../../components/common/Footer";
 import Grid from "@mui/material/Grid";
+import { Container } from "@mui/material";
+
+const data = [
+  {
+    username: "User1",
+    number_correct: 50,
+    number_wrong: 20,
+    precention: 100,
+  },
+  {
+    username: "User2",
+    number_correct: 100,
+    number_wrong: 80,
+    precention: 50,
+  },
+  {
+    username: "User3",
+    number_correct: 75,
+    number_wrong: 25,
+    precention: 20,
+  },
+  {
+    username: "User1",
+    number_correct: 50,
+    number_wrong: 20,
+    precention: 100,
+  },
+  {
+    username: "User2",
+    number_correct: 100,
+    number_wrong: 80,
+    precention: 50,
+  },
+  {
+    username: "User3",
+    number_correct: 75,
+    number_wrong: 25,
+    precention: 20,
+  },
+  {
+    username: "User1",
+    number_correct: 50,
+    number_wrong: 20,
+    precention: 100,
+  },
+  {
+    username: "User2",
+    number_correct: 100,
+    number_wrong: 80,
+    precention: 50,
+  },
+  {
+    username: "User3",
+    number_correct: 75,
+    number_wrong: 25,
+    precention: 20,
+  },
+  {
+    username: "User1",
+    number_correct: 50,
+    number_wrong: 20,
+    precention: 100,
+  },
+  {
+    username: "User2",
+    number_correct: 100,
+    number_wrong: 80,
+    precention: 50,
+  },
+  {
+    username: "User3",
+    number_correct: 75,
+    number_wrong: 25,
+    precention: 20,
+  },
+];
+
+const leaderboardData = [
+  {
+    name: "Muhammad Zahid",
+    score: 254,
+  },
+  {
+    name: "Sanna Khaaar",
+    score: 200,
+  },
+  {
+    name: "Atif Ahmed",
+    score: 150,
+  },
+];
+
+const wrongVocabularies = [
+  {
+    word: "apple",
+    number_wrong: 15,
+  },
+  {
+    word: "banana",
+    number_wrong: 12,
+  },
+  {
+    word: "orange",
+    number_wrong: 9,
+  }
+];
 
 export default function Dashboard() {
   return (
@@ -17,89 +122,89 @@ export default function Dashboard() {
         backgroundRepeat: "no-repeat",
       }}
     >
-      <AppAppBar name="Ha Nguyen" currentPage="plan" />
-      <Box id="hero" sx={{ width: "100%" }}>
-        <Box
-          sx={{
-            width: "100%",
-            pt: { xs: 10, sm: 14 },
-            pb: { xs: 8, sm: 12 },
-          }}
-        >
-          <Typography
-            variant="h2"
-            color="text.secondary"
+      <AppAppBar name="nvh0610" currentPage="plan" />
+      <Container>
+        <Box id="hero" sx={{ width: "100%" }}>
+          <Box
             sx={{
-              my: 3,
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              textAlign: "center",
-              fontSize: "32px",
-              fontWeight: "700",
-              justifyContent: "center",
+              width: "100%",
+              pt: { xs: 0, sm: 0 },
+              pb: { xs: 8, sm: 12 },
             }}
           >
-            KẾ HOẠCH ĐẤU GIÁ
-          </Typography>
-
-          {/* Bố cục 2/3 - 1/3 */}
-          <Grid container spacing={2}>
-            {/* Bên trái (2/3): Bảng xếp hạng chính */}
-            <Grid xs={12} md={8}>
-              <Box
+            {/* Căn giữa tiêu đề */}
+            <Box sx={{ display: "flex", justifyContent: "left" }}>
+              <Typography
+                variant="h2"
+                color="#ef0000"
                 sx={{
-                  mt: 3,
-                  p: 4,
-                  bgcolor: "rgba(255, 255, 255, 0.3)",
-                  borderRadius: "10px",
-                  boxShadow: "0px 3.5px 5.5px rgba(0, 0, 0, 0.02)",
+                  my: 2,
+                  textAlign: "left",
+                  fontSize: "25px",
+                  fontWeight: "600",
+                  textDecoration: "underline", // Gạch chân
+                  width: "100%",
                 }}
               >
-                <CustomizedTables />
-              </Box>
-            </Grid>
+                Daily Report Flashcards
+              </Typography>
+            </Box>
 
-            {/* Bên phải (1/3): 2 bảng con xếp dọc */}
-            <Grid xs={12} md={4}>
-              <Grid container spacing={2} direction="column">
-                {/* Leaderboard Flashcard (nửa trên) */}
-                <Grid xs={6}>
-                  <Box
+            {/* Thêm biểu đồ vào đây */}
+            <Box sx={{ my: 4 }}>
+              <ChartComponent data={data} />
+            </Box>
+
+            {/* Bố cục 2/3 - 1/3 */}
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <CustomTable data={data} />
+              </Grid>
+              
+              {/* Hai bảng nhỏ có tiêu đề và cách nhau một chút */}
+              <Grid container spacing={4} sx={{ mt: 4 }}>
+                <Grid item xs={6}>
+                  <Typography
+                    variant="h2"
+                    color="#F54949"
                     sx={{
-                      p: 3,
-                      bgcolor: "rgba(255, 255, 255, 0.3)",
-                      borderRadius: "10px",
-                      boxShadow: "0px 3.5px 5.5px rgba(0, 0, 0, 0.02)",
+                      my: 2,
+                      textAlign: "left",
+                      fontSize: "25px",
+                      fontWeight: "600",
+                      textDecoration: "underline", // Gạch chân
+                      width: "100%",
                     }}
                   >
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                      Flashcard Leaderboard
-                    </Typography>
-                    <FlashcardLeaderboard />
-                  </Box>
+                    Leaderboard
+                  </Typography>
+                  <CustomTable data={leaderboardData} />
                 </Grid>
-                {/* Leaderboard từ sai nhiều (nửa dưới) */}
-                <Grid xs={6}>
-                  <Box
+
+                <Grid item xs={6}>
+                  <Typography
+                    variant="h2"
+                    color="#F54949"
                     sx={{
-                      p: 3,
-                      bgcolor: "rgba(255, 255, 255, 0.3)",
-                      borderRadius: "10px",
-                      boxShadow: "0px 3.5px 5.5px rgba(0, 0, 0, 0.02)",
+                      my: 2,
+                      textAlign: "left",
+                      fontSize: "25px",
+                      fontWeight: "600",
+                      textDecoration: "underline", // Gạch chân
+                      width: "100%",
                     }}
                   >
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                      Most Wrong Answers Leaderboard
-                    </Typography>
-                    <WrongAnswersCard />
-                  </Box>
+                    Wrong Vocabulary
+                  </Typography>
+                  <CustomTable data={wrongVocabularies} />
                 </Grid>
               </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Box>
-      </Box>
+      </Container>
       <Footer />
     </Stack>
   );
 }
+

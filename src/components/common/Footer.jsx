@@ -5,10 +5,12 @@ import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 
-import FacebookIcon from "@mui/icons-material/GitHub";
+
+import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import TwitterIcon from "@mui/icons-material/X";
+import FacebookIcon from '@mui/icons-material/Facebook';
 
 import logo from "../../assets/logo.png";
 
@@ -24,7 +26,9 @@ function Copyright() {
   return (
     <Typography variant="body2" color="text.secondary" mt={1}>
       {"Copyright © "}
-      <Link>Online Auction System&nbsp;</Link>
+      <Box component="span" sx={{ fontWeight: "bold", color: "text.primary", display: "inline-flex", alignItems: "center" }}>
+        Develop by nvh0610 <AutoStoriesIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle" }} />
+      </Box>{" "}
       {new Date().getFullYear()}
     </Typography>
   );
@@ -58,101 +62,7 @@ export default function Footer() {
             minWidth: { xs: "100%", sm: "60%" },
           }}
         >
-          <Box sx={{ width: { xs: "100%", sm: "60%" } }}>
-            <Box
-              sx={{
-                ml: "-15px",
-                mb: 2,
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <img src={logo} style={logoStyle} alt="logo" />
-              <Typography
-                sx={{
-                  color: "#4FD1C5",
-                  fontWeight: "900",
-                  display: "inline-block",
-                  verticalAlign: "middle",
-                }}
-              >
-                OOAD
-              </Typography>
-            </Box>
-            <Typography variant="body2" fontWeight={600} gutterBottom>
-              Newsletter
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
-              Subscribe to our newsletter for weekly updates and promotions.
-            </Typography>
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            flexDirection: "column",
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" fontWeight={600}>
-            Product
-          </Typography>
-          <Link color="text.secondary" href="#">
-            Features
-          </Link>
-          <Link color="text.secondary" href="#">
-            Testimonials
-          </Link>
-          <Link color="text.secondary" href="#">
-            Highlights
-          </Link>
-          <Link color="text.secondary" href="#">
-            Pricing
-          </Link>
-          <Link color="text.secondary" href="#">
-            FAQs
-          </Link>
-        </Box>
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            flexDirection: "column",
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" fontWeight={600}>
-            Company
-          </Typography>
-          <Link color="text.secondary" href="#">
-            About us
-          </Link>
-          <Link color="text.secondary" href="#">
-            Careers
-          </Link>
-          <Link color="text.secondary" href="#">
-            Press
-          </Link>
-        </Box>
-        <Box
-          sx={{
-            display: { xs: "none", sm: "flex" },
-            flexDirection: "column",
-            gap: 1,
-          }}
-        >
-          <Typography variant="body2" fontWeight={600}>
-            Legal
-          </Typography>
-          <Link color="text.secondary" href="#">
-            Terms
-          </Link>
-          <Link color="text.secondary" href="#">
-            Privacy
-          </Link>
-          <Link color="text.secondary" href="#">
-            Contact
-          </Link>
+          
         </Box>
       </Box>
       <Box
@@ -188,11 +98,11 @@ export default function Footer() {
         >
           <IconButton
             color="inherit"
-            href="https://github.com/mui"
+            href="https://github.com/nvh0610"
             aria-label="GitHub"
             sx={{ alignSelf: "center" }}
           >
-            <FacebookIcon />
+            <GitHubIcon />
           </IconButton>
           <IconButton
             color="inherit"
@@ -200,11 +110,11 @@ export default function Footer() {
             aria-label="X"
             sx={{ alignSelf: "center" }}
           >
-            <TwitterIcon />
+            <FacebookIcon />
           </IconButton>
           <IconButton
             color="inherit"
-            href="https://www.linkedin.com/company/mui/"
+            href="https://www.linkedin.com/in/nvh0610/"
             aria-label="LinkedIn"
             sx={{ alignSelf: "center" }}
           >
