@@ -24,6 +24,7 @@ import PaginationButtons from "../pagination/pagination";
 import TypeSelect from "../../components/common/TypeSelect";
 import LimitSelect from "../../components/common/LimitSelect";
 import SearchBox from "../../components/common/Search";
+import RemoveIcon from "@mui/icons-material/Remove";
 import {
   Dialog,
   DialogActions,
@@ -41,6 +42,7 @@ const data = {
       meaning: "cộng vào, thêm vào",
       ipa: "/æd/",
       type: "v",
+      description: "add",
       url: "https://dictionary.cambridge.org/dictionary/english/add",
       examples: [
         {
@@ -57,6 +59,7 @@ const data = {
       meaning: "nhận, chấp nhận, thừa nhận, công nhận",
       ipa: "/əkˈsept/",
       type: "v",
+      description: "accept",
       url: "https://dictionary.cambridge.org/dictionary/english/accept",
       examples: [
         {
@@ -73,6 +76,7 @@ const data = {
       meaning: "(nhân viên) kế toán",
       ipa: "/əˈkaʊntənt/",
       type: "n",
+      description: "accountant",
       url: "https://dictionary.cambridge.org/dictionary/english/accountant",
       examples: [
         {
@@ -155,6 +159,204 @@ export default function Vocabulary() {
     setError(false);
     handleCloseDialog();
   };
+  const [word, setWord] = useState("");
+  const [ipa, setIpa] = useState("");
+  const [meaning, setMeaning] = useState("");
+  const [description, setDescription] = useState("");
+  const [url, setUrl] = useState("");
+  const [examples, setExamples] = useState([{ sentence: "", meaning: "" }]); // Danh sách ví dụ (ban đầu có 1 ô trống)
+
+  const handleAddExample = () => {
+    setExamples([...examples, { sentence: "", meaning: "" }]); // Thêm 1 example mới
+  };
+
+  const handleExampleChange = (index, field, value) => {
+    console.log("handleExampleChange called", index, field, value);
+
+    setExamples((prevExamples) => {
+      if (prevExamples[index]?.[field] === value) return prevExamples;
+
+      const newExamples = [...prevExamples];
+      newExamples[index] = { ...newExamples[index], [field]: value };
+      return newExamples;
+    });
+  };
+
+  const handleRemoveExample = (index) => {
+    if (examples.length > 1) {
+      setExamples((prevExamples) => prevExamples.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleCreateWord = () => {
+    if (!word.trim()) {
+      setError(true);
+      return;
+    }
+
+    setError(false);
+    handleCloseDialog();
+  };
+
+  const renderAddButton = () => (
+    <>
+      <Grid item xs={12} sm={1} sx={{ display: "flex", alignItems: "stretch" }}>
+        <Badge badgeContent="New" color="error">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpenDialog}
+            fullWidth
+            startIcon={<AddIcon />}
+            sx={{ height: "95%", borderRadius: "8px" }}
+          >
+            Add
+          </Button>
+        </Badge>
+      </Grid>
+
+      {/* Dialog Box for New Word */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        sx={{ "& .MuiPaper-root": { borderRadius: "12px" } }}
+      >
+        <DialogTitle>Create New Vocabulary</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Word"
+            variant="outlined"
+            value={word}
+            onChange={(e) => setWord(e.target.value)}
+            error={error}
+            helperText={error ? "Word is required!" : ""}
+          />
+          <TextField
+            fullWidth
+            label="Ipa"
+            variant="outlined"
+            value={ipa}
+            onChange={(e) => setIpa(e.target.value)}
+            error={error}
+            helperText={error ? "Ipa is required!" : ""}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Type"
+            variant="outlined"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            error={error}
+            helperText={error ? "Type is required!" : ""}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Meaning"
+            variant="outlined"
+            value={meaning}
+            onChange={(e) => setMeaning(e.target.value)}
+            error={error}
+            helperText={error ? "Meaning is required!" : ""}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            variant="outlined"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            error={error}
+            helperText={error ? "Description is required!" : ""}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Url"
+            variant="outlined"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+          {/* Examples List */}
+          <Typography variant="h6" sx={{ mt: 3 }}>
+            Examples:
+          </Typography>
+          {examples.map((example, index) => (
+            <Grid container spacing={1} key={index} alignItems="center">
+              <Grid item xs={5}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Sentence"
+                  value={example.sentence}
+                  onChange={(e) =>
+                    handleExampleChange(index, "sentence", e.target.value)
+                  }
+                  error={error}
+                  helperText={error ? "Sentence is required!" : ""}
+                  placeholder="Example sentence"
+                />
+              </Grid>
+              <Grid item xs={5}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Meaning"
+                  value={example.meaning}
+                  onChange={(e) =>
+                    handleExampleChange(index, "meaning", e.target.value)
+                  }
+                  error={error}
+                  helperText={error ? "Meaning is required!" : ""}
+                  placeholder="Meaning of the sentence"
+                />
+              </Grid>
+
+              {/* Chỉ hiển thị nút xóa nếu có hơn 1 ô */}
+              {examples.length > 1 && (
+                <Grid item xs={2}>
+                  <IconButton
+                    onClick={() => handleRemoveExample(index)}
+                    color="error"
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                </Grid>
+              )}
+            </Grid>
+          ))}
+
+          {/* Nút thêm Example */}
+          <Button
+            onClick={handleAddExample}
+            color="#1976d2"
+            startIcon={<AddIcon />}
+            sx={{ mt: 2 }}
+          >
+            <Typography variant="body1" sx={{ color: "#1976d2" }}>
+              Add Example
+            </Typography>
+          </Button>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 2 }}>
+          <Button onClick={handleCloseDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateWord}
+            color="primary"
+            variant="contained"
+          >
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
 
   return (
     <Stack
@@ -178,61 +380,7 @@ export default function Vocabulary() {
           <Grid item xs={12} sm={8}>
             <SearchBox onSearch={handleSearch} />
           </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={1}
-            sx={{ display: "flex", alignItems: "stretch" }}
-          >
-            <Badge badgeContent="New" color="error">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleOpenDialog}
-                fullWidth
-                startIcon={<AddIcon />}
-                sx={{ height: "95%", borderRadius: "8px" }} // Bo góc nút Add
-              >
-                Add
-              </Button>
-            </Badge>
-          </Grid>
-          {/* Dialog Box for New Category */}
-          <Dialog
-            open={openDialog}
-            onClose={handleCloseDialog}
-            sx={{ "& .MuiPaper-root": { borderRadius: "12px" } }} // Bo góc cho Dialog
-          >
-            <DialogTitle>Create New Category</DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                label="Category Name"
-                variant="outlined"
-                value={categoryName}
-                onChange={(e) => {
-                  setCategoryName(e.target.value);
-                  setError(false); // Xóa lỗi khi nhập
-                }}
-                error={error} // Hiển thị lỗi khi error = true
-                helperText={error ? "Category name is required!" : ""}
-              />
-            </DialogContent>
-            <DialogActions
-              sx={{ display: "flex", justifyContent: "space-between", px: 2 }}
-            >
-              <Button onClick={handleCloseDialog} color="secondary">
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateCategory}
-                color="primary"
-                variant="contained"
-              >
-                Create
-              </Button>
-            </DialogActions>
-          </Dialog>
+          {renderAddButton()}
         </Grid>
         <Grid container spacing={3}>
           {data.vocabularies.map((vocab) => (
@@ -353,6 +501,29 @@ export default function Vocabulary() {
                     </li>
                   </ul>
 
+                  {/* Gạch phân cách */}
+                  <Divider sx={{ my: 1, opacity: 0.5 }} />
+
+                  {/* Phần giữa */}
+                  <Typography
+                    variant="body1"
+                    sx={{ fontWeight: "bold", fontSize: "1.3rem" }}
+                  >
+                    Description:
+                  </Typography>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: "1.5em",
+                      marginLeft: "1.5em",
+                    }}
+                  >
+                    <li>
+                      <Typography variant="body1" sx={{ fontSize: "1.3rem" }}>
+                        {vocab.description}
+                      </Typography>{" "}
+                    </li>
+                  </ul>
                   {/* Gạch phân cách */}
                   <Divider sx={{ my: 1, opacity: 0.5 }} />
 
