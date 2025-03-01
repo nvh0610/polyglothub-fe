@@ -64,7 +64,7 @@ function AppAppBar(props) {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{ backgroundColor: "#1976d2" }}>
+      <AppBar position="fixed" sx={{ backgroundColor: "#aa56ff" }}>
         <Container maxWidth="lg">
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
             {/* Icon menu khi màn hình nhỏ */}
@@ -82,7 +82,7 @@ function AppAppBar(props) {
             <Typography
               variant="h6"
               component="div"
-              sx={{ flexGrow: 1, fontWeight: "bold" }}
+              sx={{ flexGrow: 1, fontWeight: "bold", color: "#FFFFFF", fontSize: "1.5rem" }}
             >
               PolyglotHub
             </Typography>
