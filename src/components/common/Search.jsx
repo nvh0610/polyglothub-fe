@@ -22,6 +22,11 @@ export default function SearchBox({ onSearch }) {
             handleSearch();
           }
         }}
+        sx={{
+          borderRadius: "8px",  // Bo góc
+          overflow: "hidden",    // Đảm bảo bo góc hoạt động
+          "& fieldset": { borderRadius: "8px" }, // Bo góc cho viền
+        }}
       />
     );
   }

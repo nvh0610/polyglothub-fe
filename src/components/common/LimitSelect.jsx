@@ -14,6 +14,10 @@ export default function LimitSelect({ limit, onChange }) {
         value={limit}
         label="Limit"
         onChange={(e) => onChange(e.target.value)}
+        sx={{
+          borderRadius: "8px",  // Bo góc cho Select
+          "& fieldset": { borderRadius: "8px" }, // Bo góc viền
+        }}
       >
         {[5, 10, 20, 30, 50, 100].map((l) => (
           <MenuItem key={l} value={l}>

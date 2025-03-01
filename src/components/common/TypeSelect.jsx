@@ -14,6 +14,10 @@ import {
           value={type}
           label="Type"
           onChange={(e) => onChange(e.target.value)}
+          sx={{
+            borderRadius: "8px",  // Bo góc cho Select
+            "& fieldset": { borderRadius: "8px" }, // Bo góc viền
+          }}
         >
           {["n", "v", "adj", "adv", "prep", "conj"].map((t) => (
             <MenuItem key={t} value={t}>

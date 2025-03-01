@@ -6,6 +6,7 @@ import {
   Button,
   Grid,
   Container,
+  Badge,
 } from "@mui/material";
 import backgroundImage from "../../assets/category.png";
 import Stack from "@mui/material/Stack";
@@ -16,15 +17,26 @@ import PaginationButtons from "../pagination/pagination";
 import { useState } from "react";
 import LimitSelect from "../../components/common/LimitSelect";
 import SearchBox from "../../components/common/Search";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 
 export default function Category() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [error, setError] = useState(false);
 
-  const handleChangeLimit = (event) => {
-    setLimit(event.target.value);
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -96,6 +108,21 @@ export default function Category() {
     navigate(`/category/${id}/vocabulary`);
   };
 
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setCategoryName("");
+    setError(false); // Reset lỗi khi đóng dialog
+  };
+  const handleCreateCategory = () => {
+    if (categoryName.trim() === "") {
+      setError(true); // Hiển thị lỗi
+      return;
+    }
+
+    console.log("New Category Created:", categoryName);
+    setError(false);
+    handleCloseDialog();
+  };
   return (
     <Stack>
       {/* Sử dụng AppAppBar giống Dashboard */}
@@ -121,11 +148,66 @@ export default function Category() {
           <Grid item xs={6} sm={2}>
             <LimitSelect limit={limit} onChange={setLimit} />
           </Grid>
-          <Grid item xs={12} sm={8}>
+          <Grid item xs={12} sm={8.5}>
             <SearchBox onSearch={handleSearch} />
           </Grid>
-        </Grid>
+          <Grid
+            item
+            xs={12}
+            sm={1}
+            sx={{ display: "flex", alignItems: "stretch" }}
+          >
+            <Badge badgeContent="New" color="error">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleOpenDialog}
+                fullWidth
+                startIcon={<AddIcon />}
+                sx={{ height: "95%", borderRadius: "8px" }} // Bo góc nút Add
+              >
+                Add
+              </Button>
+            </Badge>
+          </Grid>
 
+          {/* Dialog Box for New Category */}
+          <Dialog
+            open={openDialog}
+            onClose={handleCloseDialog}
+            sx={{ "& .MuiPaper-root": { borderRadius: "12px" } }} // Bo góc cho Dialog
+          >
+            <DialogTitle>Create New Category</DialogTitle>
+            <DialogContent>
+              <TextField
+                fullWidth
+                label="Category Name"
+                variant="outlined"
+                value={categoryName}
+                onChange={(e) => {
+                  setCategoryName(e.target.value);
+                  setError(false); // Xóa lỗi khi nhập
+                }}
+                error={error} // Hiển thị lỗi khi error = true
+                helperText={error ? "Category name is required!" : ""}
+              />
+            </DialogContent>
+            <DialogActions
+              sx={{ display: "flex", justifyContent: "space-between", px: 2 }}
+            >
+              <Button onClick={handleCloseDialog} color="secondary">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateCategory}
+                color="primary"
+                variant="contained"
+              >
+                Create
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Grid>
         <Grid container spacing={6}>
           {data.categories.map((item, index) => (
             <Grid item xs={12} sm={6} md={4} lg={4} key={index}>
