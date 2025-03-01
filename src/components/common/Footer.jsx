@@ -6,13 +6,9 @@ import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
-
-
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import FacebookIcon from '@mui/icons-material/Facebook';
-
-import logo from "../../assets/logo.png";
 
 const logoStyle = {
   width: "40px",
