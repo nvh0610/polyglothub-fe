@@ -14,7 +14,7 @@ import AppAppBar from "../../components/base/AppAppBar";
 import Footer from "../../components/common/Footer";
 import { useNavigate } from "react-router-dom";
 import PaginationButtons from "../pagination/pagination";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LimitSelect from "../../components/common/LimitSelect";
 import SearchBox from "../../components/common/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -29,6 +29,7 @@ import {
   TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { fetchCategories, createCategory, deleteCategory, updateCategory } from "./api"; // Import hàm fetch
 
 export default function Category() {
   const navigate = useNavigate();
@@ -43,63 +44,16 @@ export default function Category() {
   const [openEditDialog, setOpenEditDialog] = useState(false); // Điều khiển dialog chỉnh sửa
   const [editedCategoryName, setEditedCategoryName] = useState(""); // Lưu tên danh mục chỉnh sửa
 
-  const data = {
-    pagination: {
-      total_page: 10,
-      limit: 10,
-      page: 1,
-    },
-    categories: [
-      {
-        id: 1,
-        name: "toeic user 2",
-        created_at: "2025-03-01 13:50:21 +0700 +07",
-        updated_at: "2025-03-01 13:50:21 +0700 +07",
-      },
-      {
-        id: 2,
-        name: "toeic user 2",
-        created_at: "2025-03-01 15:58:04 +0700 +07",
-        updated_at: "2025-03-01 15:58:04 +0700 +07",
-      },
-      {
-        id: 3,
-        name: "toeic user 2",
-        created_at: "2025-03-01 15:58:06 +0700 +07",
-        updated_at: "2025-03-01 15:58:06 +0700 +07",
-      },
-      {
-        id: 4,
-        name: "toeic user 2",
-        created_at: "2025-03-01 15:58:07 +0700 +07",
-        updated_at: "2025-03-01 15:58:07 +0700 +07",
-      },
-      {
-        id: 5,
-        name: "toeic user 2",
-        created_at: "2025-03-01 15:58:08 +0700 +07",
-        updated_at: "2025-03-01 15:58:08 +0700 +07",
-      },
-      {
-        id: 6,
-        name: "toeic user 2",
-        created_at: "2025-03-01 15:58:09 +0700 +07",
-        updated_at: "2025-03-01 15:58:09 +0700 +07",
-      },
-      {
-        id: 7,
-        name: "toeic user 2",
-        created_at: "2025-03-01 15:58:09 +0700 +07",
-        updated_at: "2025-03-01 15:58:09 +0700 +07",
-      },
-      {
-        id: 8,
-        name: "toeic user 2",
-        created_at: "2025-03-01 15:58:10 +0700 +07",
-        updated_at: "2025-03-01 15:58:10 +0700 +07",
-      },
-    ],
-  };
+  const [data, setCategories] = useState({ categories: [], pagination: {} });
+
+  useEffect(() => {
+    const getCategories = async () => {
+      const result = await fetchCategories({ limit, name: searchTerm, page });
+      setCategories(result);
+    };
+
+    getCategories();
+  }, [limit, searchTerm, page]); // Gọi lại API khi limit hoặc searchTerm thay đổi
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
@@ -108,9 +62,13 @@ export default function Category() {
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+  
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+  };
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
+  const handleLimitChange = (newLimit) => {
+    setLimit(newLimit);
   };
 
   const handleNavigate = (id) => {
@@ -122,16 +80,31 @@ export default function Category() {
     setCategoryName("");
     setError(false); // Reset lỗi khi đóng dialog
   };
-  const handleCreateCategory = () => {
+  const handleCreateCategory = async () => {
     if (categoryName.trim() === "") {
-      setError(true); // Hiển thị lỗi
+      setError(true);
       return;
     }
-
-    console.log("New Category Created:", categoryName);
-    setError(false);
-    handleCloseDialog();
+  
+    try {
+      const newCategory = await createCategory(categoryName);
+  
+      if (newCategory) {
+        console.log("Category Created Successfully:", newCategory);
+  
+        // Gọi lại API để cập nhật danh sách category
+        const updatedData = await fetchCategories({ limit, name: searchTerm, page });
+        setCategories(updatedData);
+        
+        handleCloseDialog(); // Đóng dialog sau khi tạo thành công
+      } else {
+        console.error("Failed to create category.");
+      }
+    } catch (error) {
+      console.error("Error creating category:", error);
+    }
   };
+  
 
   const handleOpenMenu = (event, category) => {
     setMenuAnchor(event.currentTarget);
@@ -145,11 +118,29 @@ export default function Category() {
   };
 
   // Xử lý xóa danh mục
-  const handleDeleteCategory = () => {
-    console.log("Deleting category:", selectedCategory?.id);
-    setMenuAnchor(null);
-    // TODO: Gọi API hoặc cập nhật state để xóa danh mục
+  const handleDeleteCategory = async () => {
+    if (!selectedCategory) return;
+  
+    console.log("Deleting category:", selectedCategory.id);
+    setMenuAnchor(null); // Đóng menu
+  
+    try {
+      const isDeleted = await deleteCategory(selectedCategory.id);
+  
+      if (isDeleted) {
+        console.log("Category deleted successfully.");
+  
+        // Gọi lại API để cập nhật danh sách category
+        const updatedData = await fetchCategories({ limit, name: searchTerm, page });
+        setCategories(updatedData);
+      } else {
+        console.error("Failed to delete category.");
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    }
   };
+  
 
   // Mở dialog chỉnh sửa danh mục
   const handleEditCategory = () => {
@@ -159,16 +150,29 @@ export default function Category() {
   };
 
   // Lưu thay đổi sau khi chỉnh sửa danh mục
-  const handleSaveEdit = () => {
-    console.log(
-      "Updating category:",
-      selectedCategory?.id,
-      "New Name:",
-      editedCategoryName
-    );
-    setOpenEditDialog(false);
-    // TODO: Gọi API hoặc cập nhật state để chỉnh sửa danh mục
-  };
+  const handleSaveEdit = async () => {
+    if (!selectedCategory || !editedCategoryName.trim()) return;
+  
+    console.log("Updating category:", selectedCategory.id, "New Name:", editedCategoryName);
+  
+    try {
+      const updatedCategory = await updateCategory(selectedCategory.id, editedCategoryName);
+  
+      if (updatedCategory) {
+        console.log("Category updated successfully.");
+  
+        // Gọi lại API để cập nhật danh sách category
+        const updatedData = await fetchCategories({ limit, name: searchTerm, page });
+        setCategories(updatedData);
+      } else {
+        console.error("Failed to update category.");
+      }
+    } catch (error) {
+      console.error("Error updating category:", error);
+    } finally {
+      setOpenEditDialog(false); // Đóng dialog
+    }
+  };  
 
   // Đóng dialog chỉnh sửa
   const handleCloseEditDialog = () => {
@@ -198,7 +202,7 @@ export default function Category() {
         {/* Select Boxes + Search */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={6} sm={2}>
-            <LimitSelect limit={limit} onChange={setLimit} />
+            <LimitSelect limit={limit} onChange={handleLimitChange} />
           </Grid>
           <Grid item xs={12} sm={8.5}>
             <SearchBox onSearch={handleSearch} />
@@ -368,7 +372,7 @@ export default function Category() {
           </Dialog>
         </Grid>
         <PaginationButtons
-          pagination={data.pagination}
+          pagination={{ ...data.pagination, page }} // Luôn cập nhật page từ state
           onPageChange={handleChangePage}
           sx={{ mt: 4 }}
         />

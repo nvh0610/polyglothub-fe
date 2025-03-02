@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   Stack,
@@ -8,10 +8,8 @@ import {
   CardContent,
   Typography,
   IconButton,
-  Pagination,
   Container,
   Divider,
-  Tooltip,
   Badge,
   Button,
 } from "@mui/material";
@@ -25,6 +23,9 @@ import TypeSelect from "../../components/common/TypeSelect";
 import LimitSelect from "../../components/common/LimitSelect";
 import SearchBox from "../../components/common/Search";
 import RemoveIcon from "@mui/icons-material/Remove";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Menu, MenuItem } from "@mui/material";
 import {
   Dialog,
   DialogActions,
@@ -33,75 +34,7 @@ import {
   TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-
-const data = {
-  vocabularies: [
-    {
-      id: 1,
-      word: "add",
-      meaning: "cộng vào, thêm vào",
-      ipa: "/æd/",
-      type: "v",
-      description: "add",
-      url: "https://dictionary.cambridge.org/dictionary/english/add",
-      examples: [
-        {
-          id: 1,
-          sentence: "I added some sugar to my coffee to make it taste better.",
-          meaning:
-            "Tôi đã thêm một ít đường vào cà phê của mình để nó ngon hơn.",
-        },
-      ],
-    },
-    {
-      id: 2,
-      word: "accept",
-      meaning: "nhận, chấp nhận, thừa nhận, công nhận",
-      ipa: "/əkˈsept/",
-      type: "v",
-      description: "accept",
-      url: "https://dictionary.cambridge.org/dictionary/english/accept",
-      examples: [
-        {
-          id: 2,
-          sentence:
-            "The receptionist accepted the pack age from the courier age from the courier.",
-          meaning: "Người tiếp tân đã nhận kiện hàng từ người đưa thư.",
-        },
-      ],
-    },
-    {
-      id: 3,
-      word: "accountant",
-      meaning: "(nhân viên) kế toán",
-      ipa: "/əˈkaʊntənt/",
-      type: "n",
-      description: "accountant",
-      url: "https://dictionary.cambridge.org/dictionary/english/accountant",
-      examples: [
-        {
-          id: 3,
-          sentence:
-            "The accountant is responsible for the company's financial records.",
-          meaning:
-            "Kế toán viên chịu trách nhiệm về hồ sơ tài chính của công ty.",
-        },
-        {
-          id: 3,
-          sentence:
-            "The accountant is responsible for the company's financial records.",
-          meaning:
-            "Kế toán viên chịu trách nhiệm về hồ sơ tài chính của công ty.",
-        },
-      ],
-    },
-  ],
-  pagination: {
-    total_page: 100,
-    limit: 3,
-    page: 1,
-  },
-};
+import { fetchVocabularies, deleteVocabulary, createVocabulary } from "./api";
 
 const speakWord = (word) => {
   const synth = window.speechSynthesis;
@@ -122,16 +55,47 @@ export default function Vocabulary() {
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(false);
-
   const [openDialog, setOpenDialog] = useState(false);
-  const [categoryName, setCategoryName] = useState("");
+  const [menuAnchor, setMenuAnchor] = useState(null); // Điều khiển menu ba chấm
+  const [selectedVocabulary, setSelectedVocabulary] = useState(null); // Lưu ID danh mục được chọn
 
-  const handleChangeType = (event) => {
-    setType(event.target.value);
+  const [data, setVocabularies] = useState({
+    vocabularies: [],
+    pagination: {},
+  });
+
+  const handleOpenMenu = (event, vocabulary) => {
+    setMenuAnchor(event.currentTarget);
+    setSelectedVocabulary(vocabulary);
   };
 
-  const handleChangeLimit = (event) => {
-    setLimit(event.target.value);
+  // Đóng menu ba chấm
+  const handleCloseMenu = () => {
+    setMenuAnchor(null);
+    setSelectedVocabulary(null);
+  };
+
+  useEffect(() => {
+    const getVocabularies = async () => {
+      const result = await fetchVocabularies({
+        limit,
+        word: searchTerm,
+        page,
+        type,
+        category_id: id,
+      });
+      setVocabularies(result);
+    };
+
+    getVocabularies();
+  }, [limit, searchTerm, page, type, id]); // Gọi lại API khi limit hoặc searchTerm thay đổi
+
+  const handleChangeType = (newType) => {
+    setType(newType);
+  };
+
+  const handleLimitChange = (newLimit) => {
+    setLimit(newLimit);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -141,24 +105,74 @@ export default function Vocabulary() {
     setOpenDialog(true);
   };
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
+  const handleSearch = (value) => {
+    setSearchTerm(value);
   };
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setCategoryName("");
     setError(false); // Reset lỗi khi đóng dialog
   };
-  const handleCreateCategory = () => {
-    if (categoryName.trim() === "") {
-      setError(true); // Hiển thị lỗi
-      return;
-    }
 
-    console.log("New Category Created:", categoryName);
-    setError(false);
-    handleCloseDialog();
+  const handleDeleteVocabulary = async () => {
+    if (!selectedVocabulary) return;
+
+    console.log("Deleting vocabulary:", selectedVocabulary.id);
+    setMenuAnchor(null); // Đóng menu
+
+    try {
+      const isDeleted = await deleteVocabulary(selectedVocabulary.id);
+
+      if (isDeleted) {
+        console.log("Vocabulary deleted successfully.");
+
+        // Gọi lại API để cập nhật danh sách category
+        const updatedData = await fetchVocabularies({
+          limit,
+          word: searchTerm,
+          page,
+          type,
+          category_id: id,
+        });
+        setVocabularies(updatedData);
+      } else {
+        console.error("Failed to delete vocabulary.");
+      }
+    } catch (error) {
+      console.error("Error deleting vocabulary:", error);
+    }
   };
+
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [editWord, setEditWord] = useState("");
+  const [editIpa, setEditIpa] = useState("");
+  const [editType, setEditType] = useState("");
+  const [editMeaning, setEditMeaning] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const [editId, setEditId] = useState(null);
+
+  const handleOpenEditDialog = (vocab) => {
+    setEditWord(vocab.word);
+    setEditIpa(vocab.ipa);
+    setEditType(vocab.type);
+    setEditMeaning(vocab.meaning);
+    setEditDescription(vocab.description);
+    setEditUrl(vocab.url);
+    setEditId(vocab.id);
+    setOpenEditDialog(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+  };
+
+  const handleEditVocabulary = () => {
+    // Gửi dữ liệu update lên API
+    console.log("Updating Word:", editWord);
+    setOpenEditDialog(false);
+  };
+
   const [word, setWord] = useState("");
   const [ipa, setIpa] = useState("");
   const [meaning, setMeaning] = useState("");
@@ -188,14 +202,44 @@ export default function Vocabulary() {
     }
   };
 
-  const handleCreateWord = () => {
-    if (!word.trim()) {
+  const handleCreateVocabulary = async () => {
+    if (!word.trim() || !meaning.trim() || !ipa.trim() || !type.trim()) {
       setError(true);
       return;
     }
 
     setError(false);
-    handleCloseDialog();
+
+    const payload = {
+      word,
+      meaning,
+      ipa,
+      type,
+      url,
+      description,
+      category_id: parseInt(id, 10), // Chuyển id sang số nguyên
+      examples: examples.filter(
+        (ex) => ex.sentence.trim() && ex.meaning.trim()
+      ), // Lọc các example rỗng
+    };
+
+    try {
+      const result = await createVocabulary(payload);
+      if (result) {
+        console.log("Vocabulary created successfully", result);
+        const updatedData = await fetchVocabularies({
+          limit,
+          word: searchTerm,
+          page,
+          type,
+          category_id: id,
+        });
+        setVocabularies(updatedData);
+        handleCloseDialog();
+      }
+    } catch (error) {
+      console.error("Failed to create vocabulary", error);
+    }
   };
 
   const renderAddButton = () => (
@@ -347,7 +391,7 @@ export default function Vocabulary() {
             Cancel
           </Button>
           <Button
-            onClick={handleCreateWord}
+            onClick={handleCreateVocabulary}
             color="primary"
             variant="contained"
           >
@@ -357,6 +401,93 @@ export default function Vocabulary() {
       </Dialog>
     </>
   );
+
+  const EditDialog = ({
+    open,
+    handleClose,
+    editWord,
+    setEditWord,
+    editIpa,
+    setEditIpa,
+    editType,
+    setEditType,
+    editMeaning,
+    setEditMeaning,
+    editDescription,
+    setEditDescription,
+    editUrl,
+    setEditUrl,
+    handleEditVocabulary,
+  }) => {
+    return (
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Edit Vocabulary</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Word"
+            variant="outlined"
+            value={editWord}
+            onChange={(e) => setEditWord(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Ipa"
+            variant="outlined"
+            value={editIpa}
+            onChange={(e) => setEditIpa(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Type"
+            variant="outlined"
+            value={editType}
+            onChange={(e) => setEditType(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Meaning"
+            variant="outlined"
+            value={editMeaning}
+            onChange={(e) => setEditMeaning(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            variant="outlined"
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Url"
+            variant="outlined"
+            value={editUrl}
+            onChange={(e) => setEditUrl(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+
+        <DialogActions sx={{ px: 2 }}>
+          <Button onClick={handleClose} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleEditVocabulary}
+            color="primary"
+            variant="contained"
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+  };
 
   return (
     <Stack
@@ -372,10 +503,10 @@ export default function Vocabulary() {
         {/* Select Boxes + Search */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={6} sm={1.5}>
-            <TypeSelect type={type} onChange={setType} />
+            <TypeSelect type={type} onChange={handleChangeType} />
           </Grid>
           <Grid item xs={6} sm={1.5}>
-            <LimitSelect limit={limit} onChange={setLimit} />
+            <LimitSelect limit={limit} onChange={handleLimitChange} />
           </Grid>
           <Grid item xs={12} sm={8}>
             <SearchBox onSearch={handleSearch} />
@@ -468,13 +599,53 @@ export default function Vocabulary() {
                         <OpenInNewIcon sx={{ fontSize: "1.5rem" }} />
                       </IconButton>
                     </a>
-                    {/* Nút ba chấm dọc */}
+                    {/* Nút ba chấm */}
                     <Box sx={{ flexGrow: 1 }} />
-                    <Tooltip title="Delete" arrow>
-                      <IconButton sx={{ color: "gray" }}>
-                        <MoreVertIcon sx={{ fontSize: "1.5rem" }} />
-                      </IconButton>
-                    </Tooltip>
+                    <IconButton
+                      onClick={(event) => handleOpenMenu(event, vocab)}
+                    >
+                      <MoreVertIcon sx={{ fontSize: "1.5rem" }} />
+                    </IconButton>
+
+                    {/* Menu Edit/Delete */}
+                    <Menu
+                      anchorEl={menuAnchor}
+                      open={Boolean(menuAnchor)}
+                      onClose={handleCloseMenu}
+                      PaperProps={{
+                        sx: { boxShadow: 2, backgroundColor: "#F0FFF4" },
+                      }}
+                    >
+                      <MenuItem onClick={() => handleOpenEditDialog(vocab)}>
+                        <EditIcon sx={{ mr: 1 }} />
+                        Edit
+                      </MenuItem>
+                      <MenuItem
+                        onClick={handleDeleteVocabulary}
+                        sx={{ color: "red" }}
+                      >
+                        <DeleteIcon sx={{ mr: 1 }} />
+                        Delete
+                      </MenuItem>
+                    </Menu>
+                    {/* Hộp thoại chỉnh sửa */}
+                    <EditDialog
+                      open={openEditDialog}
+                      handleClose={handleCloseEditDialog}
+                      editWord={editWord}
+                      setEditWord={setEditWord}
+                      editIpa={editIpa}
+                      setEditIpa={setEditIpa}
+                      editType={editType}
+                      setEditType={setEditType}
+                      editMeaning={editMeaning}
+                      setEditMeaning={setEditMeaning}
+                      editDescription={editDescription}
+                      setEditDescription={setEditDescription}
+                      editUrl={editUrl}
+                      setEditUrl={setEditUrl}
+                      handleEditVocabulary={handleEditVocabulary}
+                    />
                   </Stack>
 
                   {/* Gạch phân cách */}
@@ -567,7 +738,7 @@ export default function Vocabulary() {
           ))}
         </Grid>
         <PaginationButtons
-          pagination={data.pagination}
+          pagination={{ ...data.pagination, page }} // Luôn cập nhật page từ state
           onPageChange={handleChangePage}
           sx={{ mt: 4 }}
         />
