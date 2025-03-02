@@ -17,6 +17,10 @@ import PaginationButtons from "../pagination/pagination";
 import { useState } from "react";
 import LimitSelect from "../../components/common/LimitSelect";
 import SearchBox from "../../components/common/Search";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Menu, MenuItem, IconButton } from "@mui/material";
 import {
   Dialog,
   DialogActions,
@@ -34,18 +38,11 @@ export default function Category() {
   const [openDialog, setOpenDialog] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [error, setError] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState(null); // Điều khiển menu ba chấm
+  const [selectedCategory, setSelectedCategory] = useState(null); // Lưu ID danh mục được chọn
+  const [openEditDialog, setOpenEditDialog] = useState(false); // Điều khiển dialog chỉnh sửa
+  const [editedCategoryName, setEditedCategoryName] = useState(""); // Lưu tên danh mục chỉnh sửa
 
-  const handleOpenDialog = () => {
-    setOpenDialog(true);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-  };
   const data = {
     pagination: {
       total_page: 10,
@@ -104,6 +101,18 @@ export default function Category() {
     ],
   };
 
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
+
   const handleNavigate = (id) => {
     navigate(`/category/${id}/vocabulary`);
   };
@@ -123,6 +132,49 @@ export default function Category() {
     setError(false);
     handleCloseDialog();
   };
+
+  const handleOpenMenu = (event, category) => {
+    setMenuAnchor(event.currentTarget);
+    setSelectedCategory(category);
+  };
+
+  // Đóng menu ba chấm
+  const handleCloseMenu = () => {
+    setMenuAnchor(null);
+    setSelectedCategory(null);
+  };
+
+  // Xử lý xóa danh mục
+  const handleDeleteCategory = () => {
+    console.log("Deleting category:", selectedCategory?.id);
+    setMenuAnchor(null);
+    // TODO: Gọi API hoặc cập nhật state để xóa danh mục
+  };
+
+  // Mở dialog chỉnh sửa danh mục
+  const handleEditCategory = () => {
+    setEditedCategoryName(selectedCategory?.name || "");
+    setOpenEditDialog(true);
+    setMenuAnchor(null);
+  };
+
+  // Lưu thay đổi sau khi chỉnh sửa danh mục
+  const handleSaveEdit = () => {
+    console.log(
+      "Updating category:",
+      selectedCategory?.id,
+      "New Name:",
+      editedCategoryName
+    );
+    setOpenEditDialog(false);
+    // TODO: Gọi API hoặc cập nhật state để chỉnh sửa danh mục
+  };
+
+  // Đóng dialog chỉnh sửa
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+  };
+
   return (
     <Stack>
       {/* Sử dụng AppAppBar giống Dashboard */}
@@ -227,7 +279,12 @@ export default function Category() {
                   alt={item.name}
                 />
                 <CardContent
-                  sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
+                  sx={{
+                    flexGrow: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    position: "relative",
+                  }}
                 >
                   <Typography
                     variant="h7"
@@ -237,6 +294,38 @@ export default function Category() {
                   >
                     {item.name}
                   </Typography>
+                  {/* Icon ba chấm ở góc phải */}
+                  <IconButton
+                    sx={{ position: "absolute", right: 0, top: 0 }}
+                    onClick={(event) => handleOpenMenu(event, item)}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+
+                  {/* Menu chứa Edit và Delete */}
+                  <Menu
+                    anchorEl={menuAnchor}
+                    open={Boolean(menuAnchor)}
+                    onClose={handleCloseMenu}
+                    PaperProps={{
+                      sx: {
+                        boxShadow: 2, // Hiệu ứng đổ bóng
+                        backgroundColor: "#F0FFF4",
+                      },
+                    }}
+                  >
+                    <MenuItem onClick={handleEditCategory}>
+                      <EditIcon sx={{ mr: 1 }} />
+                      Edit
+                    </MenuItem>
+                    <MenuItem
+                      onClick={handleDeleteCategory}
+                      sx={{ color: "red" }}
+                    >
+                      <DeleteIcon sx={{ mr: 1 }} />
+                      Delete
+                    </MenuItem>
+                  </Menu>
                   <Button
                     variant="contained"
                     fullWidth
@@ -252,6 +341,31 @@ export default function Category() {
               </Card>
             </Grid>
           ))}
+          {/* Dialog chỉnh sửa danh mục */}
+          <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
+            <DialogTitle>Edit Category</DialogTitle>
+            <DialogContent>
+              <TextField
+                fullWidth
+                label="Category Name"
+                variant="outlined"
+                value={editedCategoryName}
+                onChange={(e) => setEditedCategoryName(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseEditDialog} color="secondary">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveEdit}
+                color="primary"
+                variant="contained"
+              >
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Grid>
         <PaginationButtons
           pagination={data.pagination}
