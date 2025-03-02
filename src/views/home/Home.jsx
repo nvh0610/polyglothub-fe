@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -12,10 +11,11 @@ import Login from "../../components/common/Login";
 import Footer from "../../components/common/Footer";
 import AppAppBar from "../../components/base/AppAppBar";
 import carImage from "../../assets/car.png";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [accessToken] = useState(localStorage.getItem("access_token"));
-  const [role, setRole] = useState();
 
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
 
@@ -25,18 +25,9 @@ export default function Home() {
 
   useEffect(() => {
     if (accessToken) {
-      axios
-        .get(`http://localhost:8080/api/user/me`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-        .then((response) => {
-          setRole(response.data.authorities);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      navigate("/category"); // Chuyển hướng ngay khi có accessToken
     }
-  }, [accessToken]);
+  }, [accessToken, navigate]);
 
   return (
     <Stack
@@ -85,7 +76,6 @@ export default function Home() {
               <Login handleLoginDialogClose={toggleLoginDialog} />
             </Dialog>
           </Box>
-
           <Box
             sx={{
               flex: 1,

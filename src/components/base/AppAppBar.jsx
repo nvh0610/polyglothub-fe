@@ -13,10 +13,15 @@ import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { Container } from "@mui/material";
+import { Container, Avatar, Menu, MenuItem } from "@mui/material";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
+import EmailIcon from "@mui/icons-material/Email";
+import PersonIcon from "@mui/icons-material/Person";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import LockIcon from "@mui/icons-material/Lock";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 
 const drawerWidth = 240;
 const navItems = [
@@ -29,7 +34,25 @@ const navItems = [
 function AppAppBar(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const navigate = useNavigate(); // Hook để điều hướng
+  const [user, setUser] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const access_token = localStorage.getItem("access_token");
+    if (access_token) {
+      axios
+        .get("http://localhost:8000/api/user/me", {
+          headers: { Authorization: `Bearer ${access_token}` },
+        })
+        .then((response) => {
+          setUser(response.data.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching user data", error);
+        });
+    }
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -37,7 +60,22 @@ function AppAppBar(props) {
 
   const handleNavigation = (path) => {
     navigate(path);
-    setMobileOpen(false); // Đóng menu trên mobile sau khi chọn
+    setMobileOpen(false);
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    setUser(null);
+    handleMenuClose();
+    navigate("/");
   };
 
   const drawer = (
@@ -58,80 +96,59 @@ function AppAppBar(props) {
     </Box>
   );
 
-  const container =
-    window !== undefined ? () => window().document.body : undefined;
-
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <AppBar position="fixed" sx={{ backgroundColor: "#aa56ff" }}>
         <Container maxWidth="lg">
           <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-            {/* Icon menu khi màn hình nhỏ */}
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ display: { sm: "none" } }}
-            >
+            <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={handleDrawerToggle} sx={{ display: { sm: "none" } }}>
               <MenuIcon />
             </IconButton>
-
-            {/* Logo */}
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ flexGrow: 1, fontWeight: "bold", color: "#FFFFFF", fontSize: "1.5rem" }}
-            >
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: "bold", color: "#FFFFFF", fontSize: "1.5rem" }}>
               PolyglotHub
             </Typography>
-
-            {/* Navbar items */}
-            <Box
-              sx={{
-                display: { xs: "none", sm: "flex" },
-                justifyContent: "center",
-                gap: "2rem",
-              }}
-            >
+            <Box sx={{ display: "flex", alignItems: "center", gap: "1rem"}}>
               {navItems.map((item) => (
-                <Button
-                  key={item.label}
-                  onClick={() => handleNavigation(item.path)}
-                  sx={{ color: "#fff", fontSize: "1rem" }}
-                >
+                <Button key={item.label} onClick={() => handleNavigation(item.path)} sx={{ color: "#fff", fontSize: "1rem" }}>
                   {item.label}
                 </Button>
               ))}
+              {user && (
+                <>
+                  <IconButton onClick={handleMenuOpen} sx={{ color: "white" }}>
+                    <Avatar>{user.fullname.charAt(0).toUpperCase()}</Avatar>
+                  </IconButton>
+                  <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                    <MenuItem>
+                      <EmailIcon sx={{ mr: 1 }} /> Email: {user.username}
+                    </MenuItem>
+                    <MenuItem>
+                      <PersonIcon sx={{ mr: 1 }} /> Name: {user.fullname}
+                    </MenuItem>
+                    <MenuItem>
+                      <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Role: {user.role}
+                    </MenuItem>
+                    <Divider sx={{ my: 1, opacity: 0.5 }} />
+                    <MenuItem>
+                      <LockIcon sx={{ mr: 1 }} /> Change Password
+                    </MenuItem>
+                    <Divider sx={{ my: 1, opacity: 0.5 }} />
+                    <MenuItem onClick={handleLogout}>
+                      <ExitToAppIcon sx={{ mr: 1 }} /> Logout
+                    </MenuItem>
+                  </Menu>
+                </>
+              )}
             </Box>
           </Toolbar>
         </Container>
       </AppBar>
-
-      {/* Sidebar cho mobile */}
       <nav>
-        <Drawer
-          container={container}
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Cải thiện hiệu suất khi mở trên mobile
-          }}
-          sx={{
-            display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-        >
+        <Drawer container={window !== undefined ? () => window().document.body : undefined} variant="temporary" open={mobileOpen} onClose={handleDrawerToggle} ModalProps={{ keepMounted: true }} sx={{ display: { xs: "block", sm: "none" }, "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth } }}>
           {drawer}
         </Drawer>
       </nav>
-
-      {/* Nội dung chính */}
       <Box component="main" sx={{ p: 3, width: "100%" }}>
         <Toolbar />
       </Box>
