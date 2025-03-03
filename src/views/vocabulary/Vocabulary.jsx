@@ -38,8 +38,9 @@ import {
   fetchVocabularies,
   editVocabulary,
   deleteVocabulary,
-  createVocabulary,
 } from "./api";
+
+import CreateVocabularyDialog from "./VocabularyCreate";
 
 const speakWord = (word) => {
   const synth = window.speechSynthesis;
@@ -57,6 +58,7 @@ export default function Vocabulary() {
   const { id } = useParams();
   const [page, setPage] = useState(1);
   const [type, setType] = useState("");
+  const [data_type, setDataType] = useState("");
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(false);
@@ -87,17 +89,17 @@ export default function Vocabulary() {
         limit,
         word: searchTerm,
         page,
-        type,
+        data_type,
         category_id: id,
       });
       setVocabularies(result);
     };
 
     getVocabularies();
-  }, [limit, searchTerm, page, type, id]); // Gọi lại API khi limit hoặc searchTerm thay đổi
+  }, [limit, searchTerm, page, data_type, id]); // Gọi lại API khi limit hoặc searchTerm thay đổi
 
   const handleChangeType = (newType) => {
-    setType(newType);
+    setDataType(newType);
   };
 
   const handleLimitChange = (newLimit) => {
@@ -173,35 +175,13 @@ export default function Vocabulary() {
     });
   };
 
-  const handleAddExample = () => {
-    setExamples([...examples, { sentence: "", meaning: "" }]); // Thêm 1 example mới
-  };
-
   const handleAddExampleUpdate = () => {
     setSelectedVocabulary((prev) => ({
       ...prev,
       examples: [...(prev?.examples || []), { sentence: "", meaning: "" }],
     }));
   };
-  
 
-  const handleExampleChange = (index, field, value) => {
-    console.log("handleExampleChange called", index, field, value);
-
-    setExamples((prevExamples) => {
-      if (prevExamples[index]?.[field] === value) return prevExamples;
-
-      const newExamples = [...prevExamples];
-      newExamples[index] = { ...newExamples[index], [field]: value };
-      return newExamples;
-    });
-  };
-
-  const handleRemoveExample = (index) => {
-    if (examples.length > 1) {
-      setExamples((prevExamples) => prevExamples.filter((_, i) => i !== index));
-    }
-  };
 
   const handleRemoveExampleUpdate = (index) => {
     setSelectedVocabulary((prev) => ({
@@ -409,206 +389,6 @@ export default function Vocabulary() {
     </Dialog>
   );
 
-  const handleCreateVocabulary = async () => {
-    if (!word.trim() || !meaning.trim() || !ipa.trim() || !type.trim()) {
-      setError(true);
-      return;
-    }
-
-    setError(false);
-
-    const payload = {
-      word,
-      meaning,
-      ipa,
-      type,
-      url,
-      description,
-      category_id: parseInt(id, 10), // Chuyển id sang số nguyên
-      examples: examples.filter(
-        (ex) => ex.sentence.trim() && ex.meaning.trim()
-      ), // Lọc các example rỗng
-    };
-
-    try {
-      const result = await createVocabulary(payload);
-      if (result) {
-        console.log("Vocabulary created successfully", result);
-        const updatedData = await fetchVocabularies({
-          limit,
-          word: searchTerm,
-          page,
-          type,
-          category_id: id,
-        });
-        setVocabularies(updatedData);
-        handleCloseDialog();
-      }
-    } catch (error) {
-      console.error("Failed to create vocabulary", error);
-    }
-  };
-
-  const renderAddButton = () => (
-    <>
-      <Grid item xs={12} sm={1} sx={{ display: "flex", alignItems: "stretch" }}>
-        <Badge badgeContent="New" color="error">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenDialog}
-            fullWidth
-            startIcon={<AddIcon />}
-            sx={{ height: "95%", borderRadius: "8px" }}
-          >
-            Add
-          </Button>
-        </Badge>
-      </Grid>
-
-      {/* Dialog Box for New Word */}
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        sx={{ "& .MuiPaper-root": { borderRadius: "12px" } }}
-      >
-        <DialogTitle>Create New Vocabulary</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Word"
-            variant="outlined"
-            value={word}
-            onChange={(e) => setWord(e.target.value)}
-            error={error}
-            helperText={error ? "Word is required!" : ""}
-          />
-          <TextField
-            fullWidth
-            label="Ipa"
-            variant="outlined"
-            value={ipa}
-            onChange={(e) => setIpa(e.target.value)}
-            error={error}
-            helperText={error ? "Ipa is required!" : ""}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Type"
-            variant="outlined"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            error={error}
-            helperText={error ? "Type is required!" : ""}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Meaning"
-            variant="outlined"
-            value={meaning}
-            onChange={(e) => setMeaning(e.target.value)}
-            error={error}
-            helperText={error ? "Meaning is required!" : ""}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Description"
-            variant="outlined"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            error={error}
-            helperText={error ? "Description is required!" : ""}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Url"
-            variant="outlined"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-          {/* Examples List */}
-          <Typography variant="h6" sx={{ mt: 3 }}>
-            Examples:
-          </Typography>
-          {examples.map((example, index) => (
-            <Grid container spacing={1} key={index} alignItems="center">
-              <Grid item xs={5}>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  label="Sentence"
-                  value={example.sentence}
-                  onChange={(e) =>
-                    handleExampleChange(index, "sentence", e.target.value)
-                  }
-                  error={error}
-                  helperText={error ? "Sentence is required!" : ""}
-                  placeholder="Example sentence"
-                />
-              </Grid>
-              <Grid item xs={5}>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  label="Meaning"
-                  value={example.meaning}
-                  onChange={(e) =>
-                    handleExampleChange(index, "meaning", e.target.value)
-                  }
-                  error={error}
-                  helperText={error ? "Meaning is required!" : ""}
-                  placeholder="Meaning of the sentence"
-                />
-              </Grid>
-
-              {/* Chỉ hiển thị nút xóa nếu có hơn 1 ô */}
-              {examples.length > 1 && (
-                <Grid item xs={2}>
-                  <IconButton
-                    onClick={() => handleRemoveExample(index)}
-                    color="error"
-                  >
-                    <RemoveIcon />
-                  </IconButton>
-                </Grid>
-              )}
-            </Grid>
-          ))}
-
-          {/* Nút thêm Example */}
-          <Button
-            onClick={handleAddExample}
-            color="#1976d2"
-            startIcon={<AddIcon />}
-            sx={{ mt: 2 }}
-          >
-            <Typography variant="body1" sx={{ color: "#1976d2" }}>
-              Add Example
-            </Typography>
-          </Button>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 2 }}>
-          <Button onClick={handleCloseDialog} color="secondary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreateVocabulary}
-            color="primary"
-            variant="contained"
-          >
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  );
-
   return (
     <Stack
       sx={{
@@ -623,7 +403,7 @@ export default function Vocabulary() {
         {/* Select Boxes + Search */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={6} sm={1.5}>
-            <TypeSelect type={type} onChange={handleChangeType} />
+            <TypeSelect data_type={data_type} onChange={handleChangeType} />
           </Grid>
           <Grid item xs={6} sm={1.5}>
             <LimitSelect limit={limit} onChange={handleLimitChange} />
@@ -631,7 +411,48 @@ export default function Vocabulary() {
           <Grid item xs={12} sm={8}>
             <SearchBox onSearch={handleSearch} />
           </Grid>
-          {renderAddButton()}
+          <Grid item xs={12} sm={1} sx={{ display: "flex", alignItems: "stretch" }}>
+          <Badge badgeContent="New" color="error">
+          <Button
+          variant="contained"
+          color="primary"
+          onClick={handleOpenDialog}
+          fullWidth
+           startIcon={<AddIcon />}
+          sx={{ height: "95%", borderRadius: "8px" }}
+        >
+           Add
+         </Button>
+        </Badge>
+       </Grid>
+        {openDialog && (
+        <CreateVocabularyDialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          setVocabularies={setVocabularies}
+          word={word}
+          setWord={setWord}
+          ipa={ipa}
+          setIpa={setIpa}
+          type={type}
+          setType={setType}
+          meaning={meaning}
+          setMeaning={setMeaning}
+          description={description}
+          setDescription={setDescription}
+          url={url}
+          setUrl={setUrl}
+          examples={examples}
+          setExamples={setExamples}
+          error={error}
+          setError={setError}
+          id={id}
+          limit={limit}
+          searchTerm={searchTerm}
+          page={page}
+          data_type={data_type}
+        />
+      )}
         </Grid>
         <Grid container spacing={3}>
           {data.vocabularies.map((vocab) => (

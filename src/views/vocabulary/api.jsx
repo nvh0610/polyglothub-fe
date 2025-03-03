@@ -6,7 +6,7 @@ export const fetchVocabularies = async ({
   limit,
   word,
   page,
-  type,
+  data_type,
   category_id,
 }) => {
   const access_token = localStorage.getItem("access_token");
@@ -16,7 +16,7 @@ export const fetchVocabularies = async ({
       headers: {
         Authorization: `Bearer ${access_token}`,
       },
-      params: { limit, word, page, type, category_id },
+      params: { limit, word, page, data_type, category_id },
     });
 
     // Kiểm tra response có hợp lệ không
