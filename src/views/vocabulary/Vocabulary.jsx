@@ -34,7 +34,12 @@ import {
   TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { fetchVocabularies, deleteVocabulary, createVocabulary } from "./api";
+import {
+  fetchVocabularies,
+  editVocabulary,
+  deleteVocabulary,
+  createVocabulary,
+} from "./api";
 
 const speakWord = (word) => {
   const synth = window.speechSynthesis;
@@ -58,6 +63,7 @@ export default function Vocabulary() {
   const [openDialog, setOpenDialog] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState(null); // Điều khiển menu ba chấm
   const [selectedVocabulary, setSelectedVocabulary] = useState(null); // Lưu ID danh mục được chọn
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
 
   const [data, setVocabularies] = useState({
     vocabularies: [],
@@ -143,36 +149,6 @@ export default function Vocabulary() {
     }
   };
 
-  const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [editWord, setEditWord] = useState("");
-  const [editIpa, setEditIpa] = useState("");
-  const [editType, setEditType] = useState("");
-  const [editMeaning, setEditMeaning] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [editUrl, setEditUrl] = useState("");
-  const [editId, setEditId] = useState(null);
-
-  const handleOpenEditDialog = (vocab) => {
-    setEditWord(vocab.word);
-    setEditIpa(vocab.ipa);
-    setEditType(vocab.type);
-    setEditMeaning(vocab.meaning);
-    setEditDescription(vocab.description);
-    setEditUrl(vocab.url);
-    setEditId(vocab.id);
-    setOpenEditDialog(true);
-  };
-
-  const handleCloseEditDialog = () => {
-    setOpenEditDialog(false);
-  };
-
-  const handleEditVocabulary = () => {
-    // Gửi dữ liệu update lên API
-    console.log("Updating Word:", editWord);
-    setOpenEditDialog(false);
-  };
-
   const [word, setWord] = useState("");
   const [ipa, setIpa] = useState("");
   const [meaning, setMeaning] = useState("");
@@ -180,9 +156,34 @@ export default function Vocabulary() {
   const [url, setUrl] = useState("");
   const [examples, setExamples] = useState([{ sentence: "", meaning: "" }]); // Danh sách ví dụ (ban đầu có 1 ô trống)
 
+  const handleOpenUpdateDialog = () => {
+    setOpenUpdateDialog(true);
+  };
+
+  const handleCloseUpdateDialog = () => {
+    setOpenUpdateDialog(false);
+    setSelectedVocabulary(null); // Reset lại dữ liệu khi đóng hộp thoại
+  };
+
+  const handleUpdateExample = (index, field, value) => {
+    setSelectedVocabulary((prev) => {
+      const newExamples = [...prev.examples];
+      newExamples[index] = { ...newExamples[index], [field]: value };
+      return { ...prev, examples: newExamples };
+    });
+  };
+
   const handleAddExample = () => {
     setExamples([...examples, { sentence: "", meaning: "" }]); // Thêm 1 example mới
   };
+
+  const handleAddExampleUpdate = () => {
+    setSelectedVocabulary((prev) => ({
+      ...prev,
+      examples: [...(prev?.examples || []), { sentence: "", meaning: "" }],
+    }));
+  };
+  
 
   const handleExampleChange = (index, field, value) => {
     console.log("handleExampleChange called", index, field, value);
@@ -201,6 +202,212 @@ export default function Vocabulary() {
       setExamples((prevExamples) => prevExamples.filter((_, i) => i !== index));
     }
   };
+
+  const handleRemoveExampleUpdate = (index) => {
+    setSelectedVocabulary((prev) => ({
+      ...prev,
+      examples: prev.examples.filter((_, i) => i !== index),
+    }));
+  };
+  
+  const handleUpdateVocabulary = async () => {
+    if (
+      !selectedVocabulary.word.trim() ||
+      !selectedVocabulary.meaning.trim() ||
+      !selectedVocabulary.ipa.trim()
+    ) {
+      setError(true);
+      return;
+    }
+
+    selectedVocabulary.category_id = parseInt(id, 10); // Chuyển id sang số nguyên
+
+    setError(false);
+
+    const payload = {
+      ...selectedVocabulary,
+      examples: selectedVocabulary.examples
+        .filter((ex) => ex.sentence.trim() && ex.meaning.trim())
+        .map((ex) => ({
+          id: ex.id || null, // Giữ ID của example nếu có, nếu không thì gửi null
+          sentence: ex.sentence,
+          meaning: ex.meaning,
+        })),
+    };
+
+    console.log("Updating vocabulary:", payload);
+
+    try {
+      const result = await editVocabulary(selectedVocabulary.id, payload); // Gửi API update
+      if (result) {
+        console.log("Vocabulary updated successfully", result);
+        const updatedData = await fetchVocabularies({
+          limit,
+          word: searchTerm,
+          page,
+          type,
+          category_id: id,
+        });
+        setVocabularies(updatedData);
+        handleCloseUpdateDialog();
+      }
+    } catch (error) {
+      console.error("Failed to update vocabulary", error);
+    }
+  };
+
+  const renderUpdateDialog = () => (
+    <Dialog open={openUpdateDialog} onClose={handleCloseUpdateDialog}>
+      <DialogTitle>Update Vocabulary</DialogTitle>
+      <DialogContent>
+        <TextField
+          fullWidth
+          label="Word"
+          variant="outlined"
+          value={selectedVocabulary?.word || ""}
+          onChange={(e) =>
+            setSelectedVocabulary({
+              ...selectedVocabulary,
+              word: e.target.value,
+            })
+          }
+          error={error}
+          helperText={error ? "Word is required!" : ""}
+        />
+        <TextField
+          fullWidth
+          label="Ipa"
+          variant="outlined"
+          value={selectedVocabulary?.ipa || ""}
+          onChange={(e) =>
+            setSelectedVocabulary({
+              ...selectedVocabulary,
+              ipa: e.target.value,
+            })
+          }
+          error={error}
+          helperText={error ? "Ipa is required!" : ""}
+          sx={{ mt: 2 }}
+        />
+        <TextField
+          fullWidth
+          label="Type"
+          variant="outlined"
+          value={selectedVocabulary?.type || ""}
+          onChange={(e) =>
+            setSelectedVocabulary({
+              ...selectedVocabulary,
+              type: e.target.value,
+            })
+          }
+          error={error}
+          helperText={error ? "Type is required!" : ""}
+          sx={{ mt: 2 }}
+        />
+        <TextField
+          fullWidth
+          label="Meaning"
+          variant="outlined"
+          value={selectedVocabulary?.meaning || ""}
+          onChange={(e) =>
+            setSelectedVocabulary({
+              ...selectedVocabulary,
+              meaning: e.target.value,
+            })
+          }
+          error={error}
+          helperText={error ? "Meaning is required!" : ""}
+          sx={{ mt: 2 }}
+        />
+        <TextField
+          fullWidth
+          label="Description"
+          variant="outlined"
+          value={selectedVocabulary?.description || ""}
+          onChange={(e) =>
+            setSelectedVocabulary({
+              ...selectedVocabulary,
+              description: e.target.value,
+            })
+          }
+          sx={{ mt: 2 }}
+        />
+        <TextField
+          fullWidth
+          label="Url"
+          variant="outlined"
+          value={selectedVocabulary?.url || ""}
+          onChange={(e) =>
+            setSelectedVocabulary({
+              ...selectedVocabulary,
+              url: e.target.value,
+            })
+          }
+          sx={{ mt: 2 }}
+        />
+        <Typography variant="h6" sx={{ mt: 3 }}>
+          Examples:
+        </Typography>
+        {selectedVocabulary?.examples.map((example, index) => (
+          <Grid container spacing={1} key={index} alignItems="center">
+            <Grid item xs={5}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Sentence"
+                value={example.sentence}
+                onChange={(e) =>
+                  handleUpdateExample(index, "sentence", e.target.value)
+                }
+                placeholder="Example sentence"
+              />
+            </Grid>
+            <Grid item xs={5}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Meaning"
+                value={example.meaning}
+                onChange={(e) =>
+                  handleUpdateExample(index, "meaning", e.target.value)
+                }
+                placeholder="Meaning of the sentence"
+              />
+            </Grid>
+            {selectedVocabulary.examples.length > 1 && (
+              <Grid item xs={2}>
+                <IconButton
+                  onClick={() => handleRemoveExampleUpdate(index)}
+                  color="error"
+                >
+                  <RemoveIcon />
+                </IconButton>
+              </Grid>
+            )}
+          </Grid>
+        ))}
+        <Button
+          onClick={handleAddExampleUpdate}
+          startIcon={<AddIcon />}
+          sx={{ mt: 2 }}
+        >
+          Add Example
+        </Button>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCloseUpdateDialog} color="secondary">
+          Cancel
+        </Button>
+        <Button
+          onClick={handleUpdateVocabulary}
+          color="primary"
+          variant="contained"
+        >
+          Update
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   const handleCreateVocabulary = async () => {
     if (!word.trim() || !meaning.trim() || !ipa.trim() || !type.trim()) {
@@ -402,93 +609,6 @@ export default function Vocabulary() {
     </>
   );
 
-  const EditDialog = ({
-    open,
-    handleClose,
-    editWord,
-    setEditWord,
-    editIpa,
-    setEditIpa,
-    editType,
-    setEditType,
-    editMeaning,
-    setEditMeaning,
-    editDescription,
-    setEditDescription,
-    editUrl,
-    setEditUrl,
-    handleEditVocabulary,
-  }) => {
-    return (
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Edit Vocabulary</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Word"
-            variant="outlined"
-            value={editWord}
-            onChange={(e) => setEditWord(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Ipa"
-            variant="outlined"
-            value={editIpa}
-            onChange={(e) => setEditIpa(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Type"
-            variant="outlined"
-            value={editType}
-            onChange={(e) => setEditType(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Meaning"
-            variant="outlined"
-            value={editMeaning}
-            onChange={(e) => setEditMeaning(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Description"
-            variant="outlined"
-            value={editDescription}
-            onChange={(e) => setEditDescription(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Url"
-            variant="outlined"
-            value={editUrl}
-            onChange={(e) => setEditUrl(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-
-        <DialogActions sx={{ px: 2 }}>
-          <Button onClick={handleClose} color="secondary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleEditVocabulary}
-            color="primary"
-            variant="contained"
-          >
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
-  };
-
   return (
     <Stack
       sx={{
@@ -616,7 +736,7 @@ export default function Vocabulary() {
                         sx: { boxShadow: 2, backgroundColor: "#F0FFF4" },
                       }}
                     >
-                      <MenuItem onClick={() => handleOpenEditDialog(vocab)}>
+                      <MenuItem onClick={() => handleOpenUpdateDialog()}>
                         <EditIcon sx={{ mr: 1 }} />
                         Edit
                       </MenuItem>
@@ -629,23 +749,6 @@ export default function Vocabulary() {
                       </MenuItem>
                     </Menu>
                     {/* Hộp thoại chỉnh sửa */}
-                    <EditDialog
-                      open={openEditDialog}
-                      handleClose={handleCloseEditDialog}
-                      editWord={editWord}
-                      setEditWord={setEditWord}
-                      editIpa={editIpa}
-                      setEditIpa={setEditIpa}
-                      editType={editType}
-                      setEditType={setEditType}
-                      editMeaning={editMeaning}
-                      setEditMeaning={setEditMeaning}
-                      editDescription={editDescription}
-                      setEditDescription={setEditDescription}
-                      editUrl={editUrl}
-                      setEditUrl={setEditUrl}
-                      handleEditVocabulary={handleEditVocabulary}
-                    />
                   </Stack>
 
                   {/* Gạch phân cách */}
@@ -736,6 +839,7 @@ export default function Vocabulary() {
               </Card>
             </Grid>
           ))}
+          {renderUpdateDialog()}
         </Grid>
         <PaginationButtons
           pagination={{ ...data.pagination, page }} // Luôn cập nhật page từ state
