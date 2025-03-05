@@ -139,7 +139,7 @@ export default function Vocabulary() {
     setOpenUpdateDialog(false);
     setSelectedVocabulary(null); // Reset lại dữ liệu khi đóng hộp thoại
   };
- 
+
   return (
     <Stack
       sx={{
@@ -163,47 +163,47 @@ export default function Vocabulary() {
             <SearchBox onSearch={handleSearch} />
           </Grid>
           <Grid item xs={12} sm={1} sx={{ display: "flex", alignItems: "stretch" }}>
-          <Badge badgeContent="New" color="error">
-          <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenDialog}
-          fullWidth
-           startIcon={<AddIcon />}
-          sx={{ height: "95%", borderRadius: "8px" }}
-        >
-           Add
-         </Button>
-        </Badge>
-       </Grid>
-        {openDialog && (
-        <CreateVocabularyDialog
-          open={openDialog}
-          onClose={handleCloseDialog}
-          setVocabularies={setVocabularies}
-          word={word}
-          setWord={setWord}
-          ipa={ipa}
-          setIpa={setIpa}
-          type={type}
-          setType={setType}
-          meaning={meaning}
-          setMeaning={setMeaning}
-          description={description}
-          setDescription={setDescription}
-          url={url}
-          setUrl={setUrl}
-          examples={examples}
-          setExamples={setExamples}
-          error={error}
-          setError={setError}
-          id={id}
-          limit={limit}
-          searchTerm={searchTerm}
-          page={page}
-          data_type={data_type}
-        />
-      )}
+            <Badge badgeContent="New" color="error">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleOpenDialog}
+                fullWidth
+                startIcon={<AddIcon />}
+                sx={{ height: "95%", borderRadius: "8px" }}
+              >
+                Add
+              </Button>
+            </Badge>
+          </Grid>
+          {openDialog && (
+            <CreateVocabularyDialog
+              open={openDialog}
+              onClose={handleCloseDialog}
+              setVocabularies={setVocabularies}
+              word={word}
+              setWord={setWord}
+              ipa={ipa}
+              setIpa={setIpa}
+              type={type}
+              setType={setType}
+              meaning={meaning}
+              setMeaning={setMeaning}
+              description={description}
+              setDescription={setDescription}
+              url={url}
+              setUrl={setUrl}
+              examples={examples}
+              setExamples={setExamples}
+              error={error}
+              setError={setError}
+              id={id}
+              limit={limit}
+              searchTerm={searchTerm}
+              page={page}
+              data_type={data_type}
+            />
+          )}
         </Grid>
         <Grid container spacing={3}>
           {data.vocabularies.map((vocab) => (
@@ -218,13 +218,15 @@ export default function Vocabulary() {
               >
                 <CardContent>
                   {/* Phần trên */}
-                  <Stack direction="row" spacing={2} alignItems="center">
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: "wrap" }}>
                     {/* Từ vựng (chữ to, đậm) */}
                     <Typography
                       variant="h4"
                       sx={{
                         fontWeight: "bold",
-                        fontSize: "1.7rem",
+                        fontSize: "clamp(1rem, 1.7rem, 2rem)",
+                        overflowWrap: "break-word",
+                        whiteSpace: "normal",
                         color: "#333",
                       }}
                     >
@@ -234,16 +236,18 @@ export default function Vocabulary() {
                     {/* IPA + Loại từ (chữ nhỏ hơn, màu nhạt hơn) */}
                     <Typography
                       variant="subtitle1"
-                      sx={{ fontSize: "1.5rem", color: "red" }}
+                      sx={{
+                        fontSize: "clamp(1rem, 1.5rem, 1.8rem)", // Điều chỉnh font linh hoạt
+                        color: "red",
+                        overflowWrap: "break-word", // Cho phép từ dài xuống dòng
+                        whiteSpace: "normal",
+                      }}
                     >
                       {vocab.ipa}
                     </Typography>
 
                     {/* Loại từ (chữ nhỏ hơn, màu nhạt hơn) */}
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontSize: "1.2rem", color: "gray" }}
-                    >
+                    <Typography variant="subtitle1" sx={{ fontSize: "1.2rem", color: "gray" }}>
                       <Box
                         sx={{
                           display: "inline-block",
@@ -257,16 +261,16 @@ export default function Vocabulary() {
                             vocab.type === "n"
                               ? "#2196F3" // xanh nước biển
                               : vocab.type === "adj"
-                              ? "#E91E63" // hồng
-                              : vocab.type === "adv"
-                              ? "#FF9800" // cam
-                              : vocab.type === "v"
-                              ? "#4CAF50" // xanh lá cây
-                              : vocab.type === "prep"
-                              ? "#9C27B0" // tốt mâu
-                              : vocab.type === "conj"
-                              ? "#FFC107" // xanh lạc
-                              : "#00ffff",
+                                ? "#E91E63" // hồng
+                                : vocab.type === "adv"
+                                  ? "#FF9800" // cam
+                                  : vocab.type === "v"
+                                    ? "#4CAF50" // xanh lá cây
+                                    : vocab.type === "prep"
+                                      ? "#9C27B0" // tốt mâu
+                                      : vocab.type === "conj"
+                                        ? "#FFC107" // xanh lạc
+                                        : "#00ffff",
                         }}
                       >
                         {vocab.type}
@@ -313,7 +317,7 @@ export default function Vocabulary() {
                         Edit
                       </MenuItem>
                       <MenuItem
-       onClick={() => handleOpenDeleteDialog()} sx={{ color: "red" }}>
+                        onClick={() => handleOpenDeleteDialog()} sx={{ color: "red" }}>
                         <DeleteIcon sx={{ mr: 1 }} />
                         Delete
                       </MenuItem>
@@ -339,7 +343,7 @@ export default function Vocabulary() {
                     }}
                   >
                     <li>
-                      <Typography variant="body1" sx={{ fontSize: "1.3rem" }}>
+                      <Typography variant="body1" sx={{ fontSize: "1.3rem", overflowWrap: "break-word", whiteSpace: "normal" }}>
                         {vocab.meaning}
                       </Typography>{" "}
                     </li>
@@ -349,10 +353,9 @@ export default function Vocabulary() {
                   <Divider sx={{ my: 1, opacity: 0.5 }} />
 
                   {/* Phần giữa */}
-                  <Typography
-                    variant="body1"
-                    sx={{ fontWeight: "bold", fontSize: "1.3rem" }}
-                  >
+                  <Typography variant="body1" sx={{ fontWeight: "bold", fontSize: "1.3rem" }}>
+
+
                     Description:
                   </Typography>
                   <ul
@@ -363,7 +366,7 @@ export default function Vocabulary() {
                     }}
                   >
                     <li>
-                      <Typography variant="body1" sx={{ fontSize: "1.3rem" }}>
+                      <Typography variant="body1" sx={{ fontSize: "1.3rem", overflowWrap: "break-word", whiteSpace: "normal" }}>
                         {vocab.description}
                       </Typography>{" "}
                     </li>
@@ -387,7 +390,7 @@ export default function Vocabulary() {
                   >
                     {vocab.examples.map((example, index) => (
                       <li key={index} style={{ marginBottom: "0.5em" }}>
-                        <Typography variant="body1" sx={{ fontSize: "1.3rem" }}>
+                        <Typography variant="body1" sx={{ fontSize: "1.3rem", overflowWrap: "break-word", whiteSpace: "normal" }}>
                           {example.sentence}
                           <IconButton
                             sx={{ color: "#007bff", marginLeft: "0.5em" }}
@@ -396,10 +399,8 @@ export default function Vocabulary() {
                             <VolumeUpIcon sx={{ fontSize: "1.5rem" }} />
                           </IconButton>
                         </Typography>
-                        <Typography
-                          variant="body1"
-                          sx={{ fontStyle: "italic", fontSize: "1.1rem" }}
-                        >
+                        <Typography variant="body1" sx={{ fontStyle: "italic", fontSize: "1.1rem", overflowWrap: "break-word", whiteSpace: "normal" }}>
+
                           ({example.meaning})
                         </Typography>
                       </li>
@@ -410,30 +411,30 @@ export default function Vocabulary() {
             </Grid>
           ))}
           {<UpdateVocabularyDialog
-        open={openUpdateDialog}
-        onClose={handleCloseUpdateDialog}
-        selectedVocabulary={selectedVocabulary}
-        setSelectedVocabulary={setSelectedVocabulary}
-        setVocabularies={setVocabularies}
-        id={id}
-        limit={limit}
-        searchTerm={searchTerm}
-        page={page}
-        data_type={data_type}
-        error={error}
-        setError={setError}
-      />
-      }
-      {<DeleteVocabularyDialog
-        open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-        selectedVocabulary={selectedVocabulary}
-        setVocabularies={setVocabularies}
-        limit={limit}
-        searchTerm={searchTerm}
-        page={page}
-        type={type}
-      />}
+            open={openUpdateDialog}
+            onClose={handleCloseUpdateDialog}
+            selectedVocabulary={selectedVocabulary}
+            setSelectedVocabulary={setSelectedVocabulary}
+            setVocabularies={setVocabularies}
+            id={id}
+            limit={limit}
+            searchTerm={searchTerm}
+            page={page}
+            data_type={data_type}
+            error={error}
+            setError={setError}
+          />
+          }
+          {<DeleteVocabularyDialog
+            open={openDeleteDialog}
+            onClose={handleCloseDeleteDialog}
+            selectedVocabulary={selectedVocabulary}
+            setVocabularies={setVocabularies}
+            limit={limit}
+            searchTerm={searchTerm}
+            page={page}
+            type={type}
+          />}
         </Grid>
         <PaginationButtons
           pagination={{ ...data.pagination, page }} // Luôn cập nhật page từ state

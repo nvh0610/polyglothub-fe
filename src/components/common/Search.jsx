@@ -18,7 +18,7 @@ export default function SearchBox({ onSearch }) {
       }}
       sx={{
         borderRadius: "8px",
-        overflow: "hidden",
+        // overflow: "hidden",
         "& fieldset": { borderRadius: "8px" },
       }}
     />
