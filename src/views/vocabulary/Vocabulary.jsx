@@ -138,6 +138,7 @@ export default function Vocabulary() {
   const handleCloseUpdateDialog = () => {
     setOpenUpdateDialog(false);
     setSelectedVocabulary(null); // Reset lại dữ liệu khi đóng hộp thoại
+    handleCloseMenu();
   };
 
   return (
@@ -217,113 +218,112 @@ export default function Vocabulary() {
                 }}
               >
                 <CardContent>
-                  {/* Phần trên */}
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: "wrap" }}>
-                    {/* Từ vựng (chữ to, đậm) */}
-                    <Typography
-                      variant="h4"
-                      sx={{
-                        fontWeight: "bold",
-                        fontSize: "clamp(1rem, 1.7rem, 2rem)",
-                        overflowWrap: "break-word",
-                        whiteSpace: "normal",
-                        color: "#333",
-                      }}
-                    >
-                      {vocab.word}
-                    </Typography>
+                <Grid container alignItems="center">
+      <Grid item xs>
+        <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: "wrap" }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: "bold",
+              fontSize: "clamp(1rem, 1.7rem, 2rem)",
+              overflowWrap: "break-word",
+              whiteSpace: "normal",
+              color: "#333",
+            }}
+          >
+            {vocab.word}
+          </Typography>
 
-                    {/* IPA + Loại từ (chữ nhỏ hơn, màu nhạt hơn) */}
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        fontSize: "clamp(1rem, 1.5rem, 1.8rem)", // Điều chỉnh font linh hoạt
-                        color: "red",
-                        overflowWrap: "break-word", // Cho phép từ dài xuống dòng
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {vocab.ipa}
-                    </Typography>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontSize: "clamp(1rem, 1.5rem, 1.8rem)",
+              color: "red",
+              overflowWrap: "break-word",
+              whiteSpace: "normal",
+            }}
+          >
+            {vocab.ipa}
+          </Typography>
 
-                    {/* Loại từ (chữ nhỏ hơn, màu nhạt hơn) */}
-                    <Typography variant="subtitle1" sx={{ fontSize: "1.2rem", color: "gray" }}>
-                      <Box
-                        sx={{
-                          display: "inline-block",
-                          px: 1.5, // padding ngang
-                          py: 0.5, // padding dọc
-                          borderRadius: "8px",
-                          fontSize: "0.9rem",
-                          fontWeight: "bold",
-                          color: "white",
-                          backgroundColor:
-                            vocab.type === "n"
-                              ? "#2196F3" // xanh nước biển
-                              : vocab.type === "adj"
-                                ? "#E91E63" // hồng
-                                : vocab.type === "adv"
-                                  ? "#FF9800" // cam
-                                  : vocab.type === "v"
-                                    ? "#4CAF50" // xanh lá cây
-                                    : vocab.type === "prep"
-                                      ? "#9C27B0" // tốt mâu
-                                      : vocab.type === "conj"
-                                        ? "#FFC107" // xanh lạc
-                                        : "#00ffff",
-                        }}
-                      >
-                        {vocab.type}
-                      </Box>
-                    </Typography>
+          <Typography variant="subtitle1" sx={{ fontSize: "1.2rem", color: "gray" }}>
+            <Box
+              sx={{
+                display: "inline-block",
+                px: 1.5,
+                py: 0.5,
+                borderRadius: "8px",
+                fontSize: "0.9rem",
+                fontWeight: "bold",
+                color: "white",
+                backgroundColor:
+                  vocab.type === "n"
+                    ? "#2196F3"
+                    : vocab.type === "adj"
+                      ? "#E91E63"
+                      : vocab.type === "adv"
+                        ? "#FF9800"
+                        : vocab.type === "v"
+                          ? "#4CAF50"
+                          : vocab.type === "prep"
+                            ? "#9C27B0"
+                            : vocab.type === "conj"
+                              ? "#FFC107"
+                              : "#00ffff",
+              }}
+            >
+              {vocab.type}
+            </Box>
+          </Typography>
 
-                    {/* Nút phát âm */}
-                    <IconButton
-                      sx={{ color: "#007bff" }}
-                      onClick={() => speakWord(vocab.word)}
-                    >
-                      <VolumeUpIcon sx={{ fontSize: "1.5rem" }} />{" "}
-                      {/* Cách 2: Tùy chỉnh kích thước */}
-                    </IconButton>
-                    {/* Link học tập */}
-                    <a
-                      href={vocab.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <IconButton sx={{ color: "#007bff" }}>
-                        <OpenInNewIcon sx={{ fontSize: "1.5rem" }} />
-                      </IconButton>
-                    </a>
-                    {/* Nút ba chấm */}
-                    <Box sx={{ flexGrow: 1 }} />
-                    <IconButton
-                      onClick={(event) => handleOpenMenu(event, vocab)}
-                    >
-                      <MoreVertIcon sx={{ fontSize: "1.5rem" }} />
-                    </IconButton>
+          <IconButton
+            sx={{ color: "#007bff" }}
+            onClick={() => speakWord(vocab.word)}
+          >
+            <VolumeUpIcon sx={{ fontSize: "1.5rem" }} />
+          </IconButton>
 
-                    {/* Menu Edit/Delete */}
-                    <Menu
-                      anchorEl={menuAnchor}
-                      open={Boolean(menuAnchor)}
-                      onClose={handleCloseMenu}
-                      PaperProps={{
-                        sx: { boxShadow: 2, backgroundColor: "#F0FFF4" },
-                      }}
-                    >
-                      <MenuItem onClick={() => handleOpenUpdateDialog()}>
-                        <EditIcon sx={{ mr: 1 }} />
-                        Edit
-                      </MenuItem>
-                      <MenuItem
-                        onClick={() => handleOpenDeleteDialog()} sx={{ color: "red" }}>
-                        <DeleteIcon sx={{ mr: 1 }} />
-                        Delete
-                      </MenuItem>
-                    </Menu>
-                    {/* Hộp thoại chỉnh sửa */}
-                  </Stack>
+          <a
+            href={vocab.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconButton sx={{ color: "#007bff" }}>
+              <OpenInNewIcon sx={{ fontSize: "1.5rem" }} />
+            </IconButton>
+          </a>
+        </Stack>
+      </Grid>
+
+      <Grid item>
+        <IconButton
+          onClick={(event) => handleOpenMenu(event, vocab)}
+        >
+          <MoreVertIcon sx={{ fontSize: "1.5rem" }} />
+        </IconButton>
+
+        <Menu
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={handleCloseMenu}
+          PaperProps={{
+            sx: { boxShadow: 2, backgroundColor: "#F0FFF4" },
+          }}
+        >
+          <MenuItem onClick={() => handleOpenUpdateDialog(vocab)}>
+            <EditIcon sx={{ mr: 1 }} />
+            Edit
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleOpenDeleteDialog()}
+            sx={{ color: "red" }}
+          >
+            <DeleteIcon sx={{ mr: 1 }} />
+            Delete
+          </MenuItem>
+        </Menu>
+      </Grid>
+    </Grid>
 
                   {/* Gạch phân cách */}
                   <Divider sx={{ my: 1, opacity: 0.5 }} />
