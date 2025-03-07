@@ -244,7 +244,9 @@ export default function Flashcard() {
     return (
       <Stack
         sx={{
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          background: "url(/bgr.png)",
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
           minHeight: "100vh",
         }}
       >
@@ -307,9 +309,9 @@ export default function Flashcard() {
   return (
     <Stack
       sx={{
-        background: showRaindrops 
-          ? "linear-gradient(135deg, #2c3e50 0%, #3498db 100%)"
-          : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        background: "url(/bgr.png)",
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
         minHeight: "100vh",
         position: "relative",
         overflow: "hidden",
