@@ -20,7 +20,6 @@ import ReactCanvasConfetti from "react-canvas-confetti";
 import Fireworks from "../../components/effects/Fireworks";
 import { fetchFlashcardDaily } from "./api";
 
-
 const MotionCard = motion(Card);
 
 // Confetti styles
@@ -33,8 +32,6 @@ const canvasStyles = {
   left: 0,
   zIndex: 999
 };
-
-
 
 const Lightning = () => (
   <div
@@ -83,28 +80,32 @@ export default function Flashcard() {
   const [showFireworks, setShowFireworks] = useState(false);
   const [dailyFlashcards, setDailyFlashcards] = useState([]);
 
-  // Confetti instance ref
   const refAnimationInstance = React.useRef(null);
-
   const getInstance = useCallback((instance) => {
     refAnimationInstance.current = instance;
   }, []);
 
   const [showRain, setShowRain] = useState(false);
 
+  // Fetch flashcards based on selected type
   useEffect(() => {
-    const getDailyFlashcards = async () => {
-      try {
-        const flashcards = await fetchFlashcardDaily();
-        setDailyFlashcards(flashcards);
-      } catch (error) {
-        console.error('Error fetching daily flashcards:', error);
+    const getFlashcards = async () => {
+      if (selectedButton === 'daily') {
+        try {
+          const flashcards = await fetchFlashcardDaily();
+          setDailyFlashcards(flashcards);
+        } catch (error) {
+          console.error('Error fetching daily flashcards:', error);
+          setDailyFlashcards([]);
+        }
+      } else {
+        // Reset flashcards for unsupported types
         setDailyFlashcards([]);
       }
     };
 
-    getDailyFlashcards();
-  }, []);
+    getFlashcards();
+  }, [selectedButton]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -147,16 +148,10 @@ export default function Flashcard() {
     return () => document.head.removeChild(style);
   }, []);
 
-  if (!dailyFlashcards || dailyFlashcards.length === 0) {
-    return (
-      <Stack sx={{ minHeight: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <Typography variant="h5">Loading flashcards...</Typography>
-      </Stack>
-    );
-  }
-
   const handleButtonClick = (buttonName) => {
     setSelectedButton(buttonName);
+    setCurrentCardIndex(0);
+    resetCard();
   };
 
   const handleShowWordChange = (event) => {
@@ -210,7 +205,6 @@ export default function Flashcard() {
       setShowFireworks(true);
       setShowRaindrops(false);
       setShowLightning(false);
-      
       setTimeout(() => {
         setShowFireworks(false);
       }, 3000);
@@ -218,7 +212,6 @@ export default function Flashcard() {
       setShowRaindrops(true);
       setShowLightning(true);
       playThunder();
-
       setTimeout(() => {
         setShowRaindrops(false);
         setShowLightning(false);
@@ -246,6 +239,71 @@ export default function Flashcard() {
     })
   };
 
+  // Render loading or empty state
+  if (!dailyFlashcards || dailyFlashcards.length === 0) {
+    return (
+      <Stack
+        sx={{
+          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          minHeight: "100vh",
+        }}
+      >
+        <AppAppBar name="nvh0610" currentPage="plan" />
+        <Container maxWidth="lg">
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              textAlign: 'center', 
+              color: '#2c3e50', 
+              my: 4, 
+              fontWeight: 'bold',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            Flashcards
+          </Typography>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+            {['all', 'personal', 'daily'].map((type) => (
+              <Button
+                key={type}
+                variant={selectedButton === type ? "contained" : "outlined"}
+                onClick={() => handleButtonClick(type)}
+                sx={{
+                  mx: 1,
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'capitalize',
+                  backgroundColor: selectedButton === type ? '#25ba25' : '#cf87ff',
+                  color: 'white',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: selectedButton === type ? '#1e9e1e' : '#ba68ff',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                  }
+                }}
+              >
+                {type} Flashcards
+              </Button>
+            ))}
+          </Box>
+
+          <Stack alignItems="center" justifyContent="center" sx={{ minHeight: "50vh" }}>
+            <Typography variant="h5" sx={{ color: '#2c3e50' }}>
+              {selectedButton === 'daily' 
+                ? "Loading daily flashcards..." 
+                : `${selectedButton === 'all' ? 'All' : 'Personal'} Flashcards feature coming soon!`}
+            </Typography>
+          </Stack>
+        </Container>
+        <Footer />
+      </Stack>
+    );
+  }
+
+  // Main content render
   return (
     <Stack
       sx={{
@@ -259,11 +317,8 @@ export default function Flashcard() {
       }}
     >
       <ReactCanvasConfetti refConfetti={getInstance} style={canvasStyles} />
-      
-      {/* Fireworks effect */}
       <Fireworks isActive={showFireworks} />
 
-      {/* Rain effect with faster animation */}
       {showRaindrops && Array.from({ length: 100 }).map((_, i) => (
         <RainDrop
           key={i}
@@ -272,7 +327,6 @@ export default function Flashcard() {
         />
       ))}
 
-      {/* Lightning effect with faster animation */}
       {showLightning && <Lightning />}
 
       <AppAppBar name="nvh0610" currentPage="plan" />
