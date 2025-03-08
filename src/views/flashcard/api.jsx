@@ -23,3 +23,20 @@ export const fetchFlashcardDaily = async () => {
     return [];
   }
 };
+
+export const confirmFlashcard = async (vocabulary_id, answer, type) => {
+  const access_token = localStorage.getItem("access_token");
+
+  try {
+    const response = await axios.post(`${API_URL}/confirm`, { vocabulary_id, answer, type }, {
+      headers: {  
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming flashcard:", error);
+    return { success: false, message: "Error confirming flashcard" };
+  }
+};

@@ -298,6 +298,7 @@ export default function Category() {
                   >
                     {item.name}
                   </Typography>
+                  
                   {/* Icon ba chấm ở góc phải */}
                   <IconButton
                     sx={{ position: "absolute", right: 0, top: 0 }}
@@ -306,6 +307,22 @@ export default function Category() {
                     <MoreVertIcon />
                   </IconButton>
 
+                  {/* Thêm created_by */}
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      position: 'absolute',
+                      right: 8,
+                      bottom: 8,
+                      fontSize: '0.75rem',
+                      color: 'text.secondary',
+                      fontStyle: 'italic',
+                      opacity: 0.8
+                    }}
+                  >
+                    Created by: {item.user_id <= 0 ? 'Admin' : 'Me'}
+                  </Typography>
+
                   {/* Menu chứa Edit và Delete */}
                   <Menu
                     anchorEl={menuAnchor}
@@ -313,7 +330,7 @@ export default function Category() {
                     onClose={handleCloseMenu}
                     PaperProps={{
                       sx: {
-                        boxShadow: 2, // Hiệu ứng đổ bóng
+                        boxShadow: 2,
                         backgroundColor: "#F0FFF4",
                       },
                     }}
@@ -330,12 +347,14 @@ export default function Category() {
                       Delete
                     </MenuItem>
                   </Menu>
+                  
                   <Button
                     variant="contained"
                     fullWidth
                     sx={{
-                      mt: "auto", // Đẩy button xuống đáy
+                      mt: "auto",
                       fontStyle: "arial",
+                      mb: 1, // Thêm margin bottom để không đè lên created by
                     }}
                     onClick={() => handleNavigate(item.id)}
                   >

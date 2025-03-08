@@ -11,14 +11,18 @@ import {
   Box,
   TextField,
   Checkbox,
-  FormControlLabel
+  FormControl,
+  FormControlLabel,
+  RadioGroup,
+  Radio
 } from "@mui/material";
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { motion, AnimatePresence } from "framer-motion";
 import ReactCanvasConfetti from "react-canvas-confetti";
 import Fireworks from "../../components/effects/Fireworks";
-import { fetchFlashcardDaily } from "./api";
+import { fetchFlashcardDaily, confirmFlashcard } from "./api";
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 
 const MotionCard = motion(Card);
 
@@ -41,10 +45,10 @@ const Lightning = () => (
       left: 0,
       width: '100%',
       height: '100%',
-      backgroundColor: 'white',
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
       opacity: 0,
       zIndex: 1000,
-      animation: 'lightning 3s infinite'
+      animation: 'lightning 1s infinite'
     }}
   />
 );
@@ -53,15 +57,15 @@ const RainDrop = ({ delay, duration }) => (
   <div
     style={{
       position: 'fixed',
-      width: '2px',
-      height: '100px',
-      background: 'linear-gradient(transparent, #fff)',
+      width: '3px',
+      height: '120px',
+      background: 'linear-gradient(transparent, #666)',
       animation: `fall ${duration}s linear infinite`,
       animationDelay: `${delay}s`,
       left: `${Math.random() * 100}%`,
-      opacity: 0.6,
+      opacity: 0.8,
       zIndex: 999,
-      filter: 'blur(1px)',
+      filter: 'blur(2px)',
     }}
   />
 );
@@ -79,6 +83,7 @@ export default function Flashcard() {
   const [showLightning, setShowLightning] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
   const [dailyFlashcards, setDailyFlashcards] = useState([]);
+  const [displayType, setDisplayType] = useState('word'); // 'word', 'meaning', 'ipa', 'audio'
 
   const refAnimationInstance = React.useRef(null);
   const getInstance = useCallback((instance) => {
@@ -109,7 +114,8 @@ export default function Flashcard() {
 
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.repeat) {
+        e.preventDefault();
         handleCheck();
       } else if (e.key === 'ArrowRight') {
         handleNext();
@@ -127,20 +133,22 @@ export default function Flashcard() {
     style.textContent = `
       @keyframes fall {
         0% {
-          transform: translateY(-50px) rotate(0deg);
+          transform: translateY(-100px) rotate(15deg);
           opacity: 0.8;
         }
         100% {
-          transform: translateY(100vh) rotate(360deg);
-          opacity: 0;
+          transform: translateY(100vh) rotate(25deg);
+          opacity: 0.3;
         }
       }
       @keyframes lightning {
         0% { opacity: 0; }
-        45% { opacity: 0.7; }
-        50% { opacity: 0.3; }
-        55% { opacity: 0.7; }
-        60% { opacity: 0; }
+        20% { opacity: 0.8; }
+        30% { opacity: 0.3; }
+        40% { opacity: 0.8; }
+        50% { opacity: 0; }
+        60% { opacity: 0.6; }
+        70% { opacity: 0; }
         100% { opacity: 0; }
       }
     `;
@@ -193,21 +201,54 @@ export default function Flashcard() {
     thunder.play().catch(e => console.log('Thunder audio failed to play'));
   };
 
-  const handleCheck = () => {
-    if (!dailyFlashcards.length) return;
+  const [isChecking, setIsChecking] = useState(false);
+
+  const handleCheck = async () => {
+    if (!dailyFlashcards.length || isChecking) return;
+    setIsChecking(true);
+
     const currentCard = dailyFlashcards[currentCardIndex];
-    const correctAnswer = showWord ? currentCard.meaning : currentCard.word;
+    
+    // Determine correct answer based on display type
+    let correctAnswer;
+    switch (displayType) {
+      case 'word':
+        correctAnswer = currentCard.meaning;
+        break;
+      case 'meaning':
+      case 'ipa':
+      case 'audio':
+        correctAnswer = currentCard.word;
+        break;
+      default:
+        correctAnswer = '';
+    }
+
     const isAnswerCorrect = userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
     setIsCorrect(isAnswerCorrect);
     setShowAnswer(true);
 
+    // Gọi API confirmFlashcard
+    try {
+      await confirmFlashcard(
+        currentCard.vocabulary_id,
+        userAnswer.trim(),
+        displayType // Gửi type tương ứng với option đang chọn
+      );
+    } catch (error) {
+      console.error("Error confirming flashcard:", error);
+    } finally {
+      setIsChecking(false);
+    }
+
+    // Hiệu ứng vẫn giữ nguyên
     if (isAnswerCorrect) {
       setShowFireworks(true);
       setShowRaindrops(false);
       setShowLightning(false);
       setTimeout(() => {
         setShowFireworks(false);
-      }, 3000);
+      }, 1500);
     } else {
       setShowRaindrops(true);
       setShowLightning(true);
@@ -237,6 +278,120 @@ export default function Flashcard() {
       scale: 0.9,
       zIndex: 0
     })
+  };
+
+  // Update the display options component
+  const DisplayOptions = () => (
+    <FormControl component="fieldset">
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <FormControlLabel 
+          value="word" 
+          control={
+            <Checkbox 
+              checked={displayType === 'word'}
+              onChange={() => setDisplayType('word')}
+              sx={{
+                color: '#25ba25',
+                '&.Mui-checked': {
+                  color: '#25ba25',
+                },
+              }}
+            />
+          } 
+          label="Show Word" 
+        />
+        <FormControlLabel 
+          value="meaning" 
+          control={
+            <Checkbox 
+              checked={displayType === 'meaning'}
+              onChange={() => setDisplayType('meaning')}
+              sx={{
+                color: '#25ba25',
+                '&.Mui-checked': {
+                  color: '#25ba25',
+                },
+              }}
+            />
+          } 
+          label="Show Meaning" 
+        />
+        <FormControlLabel 
+          value="ipa" 
+          control={
+            <Checkbox 
+              checked={displayType === 'ipa'}
+              onChange={() => setDisplayType('ipa')}
+              sx={{
+                color: '#25ba25',
+                '&.Mui-checked': {
+                  color: '#25ba25',
+                },
+              }}
+            />
+          } 
+          label="Show IPA" 
+        />
+        <FormControlLabel 
+          value="audio" 
+          control={
+            <Checkbox 
+              checked={displayType === 'audio'}
+              onChange={() => {
+                setDisplayType('audio');
+                setUserAnswer('');
+                setShowAnswer(false);
+              }}
+              sx={{
+                color: '#25ba25',
+                '&.Mui-checked': {
+                  color: '#25ba25',
+                },
+              }}
+            />
+          } 
+          label="Show Audio" 
+        />
+      </Box>
+    </FormControl>
+  );
+
+  // Update the card display component
+  const CardDisplay = ({ card }) => {
+    if (!card) return null;
+
+    switch (displayType) {
+      case 'word':
+        return <Typography>{card.word}</Typography>;
+      case 'meaning':
+        return <Typography>{card.meaning}</Typography>;
+      case 'ipa':
+        return <Typography variant="subtitle1" sx={{ color: 'red' }}>{card.ipa}</Typography>;
+      case 'audio':
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconButton
+              onClick={() => speakWord(card.word)}
+              sx={{ fontSize: '3rem' }}
+            >
+              <VolumeUpIcon sx={{ fontSize: 'inherit' }} />
+            </IconButton>
+          </Box>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Add the speak function
+  const speakWord = (word) => {
+    if (window.responsiveVoice) {
+      window.responsiveVoice.speak(word, "UK English Male", {
+        pitch: 1,
+        rate: 0.9,
+        volume: 1
+      });
+    }
   };
 
   // Render loading or empty state
@@ -375,34 +530,7 @@ export default function Flashcard() {
         </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={showWord}
-                onChange={handleShowWordChange}
-                sx={{
-                  '& .MuiSvgIcon-root': { fontSize: 28 },
-                  '&.Mui-checked': { color: '#25ba25' },
-                }}
-              />
-            }
-            label="Show Word"
-            sx={{ mx: 2 }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={showMeaning}
-                onChange={handleShowMeaningChange}
-                sx={{
-                  '& .MuiSvgIcon-root': { fontSize: 28 },
-                  '&.Mui-checked': { color: '#25ba25' },
-                }}
-              />
-            }
-            label="Show Meaning"
-            sx={{ mx: 2 }}
-          />
+          <DisplayOptions />
         </Box>
 
         <Typography 
@@ -456,27 +584,15 @@ export default function Flashcard() {
                 padding: 3,
               }}
             >
-              <Typography 
-                variant="h3" 
-                component="div" 
-                align="center"
-                sx={{ 
-                  color: '#2c3e50',
-                  mb: 4,
-                  fontWeight: 'bold',
-                }}
-              >
-                {showWord ? dailyFlashcards[currentCardIndex].word : dailyFlashcards[currentCardIndex].meaning}
-              </Typography>
+              <CardDisplay card={dailyFlashcards[currentCardIndex]} />
 
               <Box sx={{ width: '100%', maxWidth: 300 }}>
                 <TextField
                   fullWidth
                   variant="outlined"
-                  placeholder={showWord ? "Enter meaning" : "Enter word"}
+                  placeholder={displayType === 'word' ? "Enter meaning" : displayType === 'meaning' ? "Enter word" : displayType === 'ipa' ? "Enter IPA" : "Enter audio"}
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleCheck()}
                   error={isCorrect === false}
                   autoComplete="off"
                   sx={{ mb: 2 }}
