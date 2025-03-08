@@ -10,7 +10,7 @@ import Login from "../../components/common/Login";
 
 import Footer from "../../components/common/Footer";
 import AppAppBar from "../../components/base/AppAppBar";
-import carImage from "../../assets/car.png";
+import carImage from "../../assets/logo_transparent.png";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -83,10 +83,10 @@ export default function Home() {
               justifyContent: "center",
             }}
           >
-            <Box sx={{ width: { lg: "100%", xs: "80%" } }}>
+            <Box sx={{ width: { lg: "100%", xs: "100%"} }}>
               <img
                 src={carImage}
-                style={{ maxWidth: "100%", textAlign: "center" }}
+                style={{ maxWidth: "150%", textAlign: "center" }}
                 alt="car hero"
               />
             </Box>
