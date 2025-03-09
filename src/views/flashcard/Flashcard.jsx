@@ -21,8 +21,10 @@ import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import { motion, AnimatePresence } from "framer-motion";
 import ReactCanvasConfetti from "react-canvas-confetti";
 import Fireworks from "../../components/effects/Fireworks";
-import { fetchFlashcardDaily, confirmFlashcard } from "./api";
+import { fetchFlashcardDaily, confirmFlashcard, fetchVocabularies } from "./api";
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import PaginationButtons from "../pagination/pagination";
+
 
 const MotionCard = motion(Card);
 
@@ -71,6 +73,8 @@ const RainDrop = ({ delay, duration }) => (
 );
 
 export default function Flashcard() {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(3);
   const [selectedButton, setSelectedButton] = useState("all");
   const [showWord, setShowWord] = useState(true);
   const [showMeaning, setShowMeaning] = useState(false);
@@ -92,25 +96,52 @@ export default function Flashcard() {
 
   const [showRain, setShowRain] = useState(false);
 
+  // Thêm states mới
+  const [vocabularies, setVocabularies] = useState([]); // Lưu data từ fetchVocabularies
+  const [pagination, setPagination] = useState({}); // Lưu thông tin phân trang
+
   // Fetch flashcards based on selected type
   useEffect(() => {
     const getFlashcards = async () => {
-      if (selectedButton === 'daily') {
-        try {
-          const flashcards = await fetchFlashcardDaily();
-          setDailyFlashcards(flashcards);
-        } catch (error) {
-          console.error('Error fetching daily flashcards:', error);
-          setDailyFlashcards([]);
+      try {
+        switch (selectedButton) {
+          case 'daily':
+            const dailyCards = await fetchFlashcardDaily();
+            setDailyFlashcards(dailyCards);
+            setVocabularies([]); // Reset vocabularies khi chuyển sang daily
+            break;
+
+          case 'all':
+            const allResult = await fetchVocabularies({
+              page,
+              limit,
+              option: 'all'  // Truyền option 'all' cho All Flashcards
+            });
+            setVocabularies(allResult.vocabularies || []);
+            setPagination(allResult.pagination || {});
+            setDailyFlashcards([]); 
+            break;
+
+          case 'personal':
+            const personalResult = await fetchVocabularies({
+              page,
+              limit,
+              option: 'private'  // Truyền option 'private' cho Personal Flashcards
+            });
+            setVocabularies(personalResult.vocabularies || []);
+            setPagination(personalResult.pagination || {});
+            setDailyFlashcards([]);
+            break;
         }
-      } else {
-        // Reset flashcards for unsupported types
+      } catch (error) {
+        console.error('Error fetching flashcards:', error);
         setDailyFlashcards([]);
+        setVocabularies([]);
       }
     };
 
     getFlashcards();
-  }, [selectedButton]);
+  }, [selectedButton, page, limit]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -175,16 +206,46 @@ export default function Flashcard() {
   };
 
   const handleNext = () => {
-    if (!dailyFlashcards.length) return;
-    setDirection(1);
-    setCurrentCardIndex((prev) => (prev + 1) % dailyFlashcards.length);
+    // Kiểm tra có flashcards hay không dựa vào selectedButton
+    if ((selectedButton === 'daily' && !dailyFlashcards.length) || 
+        (selectedButton !== 'daily' && !vocabularies.length)) return;
+    
+    const maxCards = selectedButton === 'daily' ? dailyFlashcards.length : vocabularies.length;
+    
+    if (currentCardIndex === maxCards - 1) {
+      // Nếu đang ở card cuối và không phải daily, chuyển trang tiếp
+      if (selectedButton !== 'daily' && page < pagination.totalPages) {
+        setPage(page + 1);
+        setCurrentCardIndex(0);
+      } else {
+        setCurrentCardIndex(0); // Quay lại card đầu
+      }
+    } else {
+      setDirection(1);
+      setCurrentCardIndex(prev => prev + 1);
+    }
     resetCard();
   };
 
   const handlePrevious = () => {
-    if (!dailyFlashcards.length) return;
-    setDirection(-1);
-    setCurrentCardIndex((prev) => (prev - 1 + dailyFlashcards.length) % dailyFlashcards.length);
+    // Kiểm tra có flashcards hay không dựa vào selectedButton
+    if ((selectedButton === 'daily' && !dailyFlashcards.length) || 
+        (selectedButton !== 'daily' && !vocabularies.length)) return;
+    
+    const maxCards = selectedButton === 'daily' ? dailyFlashcards.length : vocabularies.length;
+    
+    if (currentCardIndex === 0) {
+      // Nếu đang ở card đầu và không phải daily, quay lại trang trước
+      if (selectedButton !== 'daily' && page > 1) {
+        setPage(page - 1);
+        setCurrentCardIndex(limit - 1);
+      } else {
+        setCurrentCardIndex(maxCards - 1);
+      }
+    } else {
+      setDirection(-1);
+      setCurrentCardIndex(prev => prev - 1);
+    }
     resetCard();
   };
 
@@ -204,12 +265,13 @@ export default function Flashcard() {
   const [isChecking, setIsChecking] = useState(false);
 
   const handleCheck = async () => {
-    if (!dailyFlashcards.length || isChecking) return;
+    const currentCard = selectedButton === 'daily' 
+      ? dailyFlashcards[currentCardIndex]
+      : vocabularies[currentCardIndex];
+
+    if (!currentCard || isChecking) return;
     setIsChecking(true);
 
-    const currentCard = dailyFlashcards[currentCardIndex];
-    
-    // Determine correct answer based on display type
     let correctAnswer;
     switch (displayType) {
       case 'word':
@@ -228,20 +290,22 @@ export default function Flashcard() {
     setIsCorrect(isAnswerCorrect);
     setShowAnswer(true);
 
-    // Gọi API confirmFlashcard
-    try {
-      await confirmFlashcard(
-        currentCard.vocabulary_id,
-        userAnswer.trim(),
-        displayType // Gửi type tương ứng với option đang chọn
-      );
-    } catch (error) {
-      console.error("Error confirming flashcard:", error);
-    } finally {
-      setIsChecking(false);
+    // Chỉ gọi API confirm khi là daily flashcard
+    if (selectedButton === 'daily') {
+      try {
+        await confirmFlashcard(
+          currentCard.vocabulary_id,
+          userAnswer.trim(),
+          displayType
+        );
+      } catch (error) {
+        console.error("Error confirming flashcard:", error);
+      }
     }
 
-    // Hiệu ứng vẫn giữ nguyên
+    setIsChecking(false);
+
+    // Hiệu ứng vẫn giữ nguyên cho tất cả các loại
     if (isAnswerCorrect) {
       setShowFireworks(true);
       setShowRaindrops(false);
@@ -394,8 +458,27 @@ export default function Flashcard() {
     }
   };
 
-  // Render loading or empty state
-  if (!dailyFlashcards || dailyFlashcards.length === 0) {
+  // Sửa lại điều kiện kiểm tra data
+  const currentFlashcards = selectedButton === 'daily' ? dailyFlashcards : vocabularies;
+
+  // Thêm hàm xử lý thay đổi trang
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+    setCurrentCardIndex(0); // Reset về card đầu tiên khi đổi trang
+    resetCard();
+  };
+
+  // Thêm hàm xử lý thay đổi limit nếu cần
+  const handleLimitChange = (newLimit) => {
+    setLimit(newLimit);
+    setPage(1); // Reset về trang 1 khi đổi limit
+    setCurrentCardIndex(0);
+    resetCard();
+  };
+
+  // Sửa lại điều kiện loading state
+  if ((!dailyFlashcards.length && selectedButton === 'daily') || 
+      (!vocabularies.length && selectedButton !== 'daily')) {
     return (
       <Stack
         sx={{
@@ -451,7 +534,7 @@ export default function Flashcard() {
             <Typography variant="h5" sx={{ color: '#2c3e50' }}>
               {selectedButton === 'daily' 
                 ? "Loading daily flashcards..." 
-                : `${selectedButton === 'all' ? 'All' : 'Personal'} Flashcards feature coming soon!`}
+                : "Loading " + selectedButton + " flashcards..."}
             </Typography>
           </Stack>
         </Container>
@@ -541,7 +624,7 @@ export default function Flashcard() {
             mb: 2
           }}
         >
-          {`${currentCardIndex + 1} / ${dailyFlashcards.length}`}
+          {`${currentCardIndex + 1} / ${currentFlashcards.length}`}
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', height: '400px' }}>
@@ -584,7 +667,7 @@ export default function Flashcard() {
                 padding: 3,
               }}
             >
-              <CardDisplay card={dailyFlashcards[currentCardIndex]} />
+              <CardDisplay card={currentFlashcards[currentCardIndex]} />
 
               <Box sx={{ width: '100%', maxWidth: 300 }}>
                 <TextField
@@ -654,6 +737,16 @@ export default function Flashcard() {
         >
           Use arrow keys to navigate and Enter to check your answer
         </Typography>
+
+        {/* Thêm pagination buttons cho All và Personal Flashcards */}
+        {selectedButton !== 'daily' && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <PaginationButtons
+              pagination={{ ...pagination, page }}
+              onPageChange={handleChangePage}
+            />
+          </Box>
+        )}
       </Container>
 
       <Footer />

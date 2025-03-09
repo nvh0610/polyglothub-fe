@@ -40,3 +40,33 @@ export const confirmFlashcard = async (vocabulary_id, answer, type) => {
     return { success: false, message: "Error confirming flashcard" };
   }
 };
+
+export const fetchVocabularies = async ({
+  limit,
+  page,
+  option,
+}) => {
+  const access_token = localStorage.getItem("access_token");
+
+  try {
+    const response = await axios.get(`${API_URL}/all`, {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+      params: { limit, page, option },
+    });
+
+    if (!response.data || !response.data.data) {
+      console.error("API returned an unexpected response:", response.data);
+      return { pagination: {}, vocabularies: [] };
+    }
+
+    return {
+      pagination: response.data.data.pagination || {},
+      vocabularies: response.data.data.vocabularies || [],
+    };
+  } catch (error) {
+    console.error("Error fetching vocabularies:", error);
+    return { pagination: {}, vocabularies: [] }; 
+  }
+};
