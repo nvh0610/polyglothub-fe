@@ -8,7 +8,7 @@ import {
   Container,
   Badge,
 } from "@mui/material";
-import backgroundImage from "../../assets/category.png";
+import backgroundImage from "../../assets/logo_3.png";
 import Stack from "@mui/material/Stack";
 import AppAppBar from "../../components/base/AppAppBar";
 import Footer from "../../components/common/Footer";
@@ -197,7 +197,7 @@ export default function Category() {
             color: "#0e3fef",
           }}
         >
-          Topic
+          Category
         </Typography>
         {/* Select Boxes + Search */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -278,7 +278,7 @@ export default function Category() {
               >
                 <CardMedia
                   component="img"
-                  height="160"
+                  height="80%"
                   image={item.image || backgroundImage}
                   alt={item.name}
                 />
@@ -291,7 +291,7 @@ export default function Category() {
                   }}
                 >
                   <Typography
-                    variant="h7"
+                    variant="h6"
                     fontWeight="bold"
                     textAlign="center"
                     sx={{ mb: 1, color: "#0e3fef" }}

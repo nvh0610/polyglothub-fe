@@ -22,6 +22,13 @@ import PersonIcon from "@mui/icons-material/Person";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import LockIcon from "@mui/icons-material/Lock";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import Alert from '@mui/material/Alert';
+import { changePassword } from "./api";
 
 const drawerWidth = 240;
 const navItems = [
@@ -37,6 +44,14 @@ function AppAppBar(props) {
   const [user, setUser] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const navigate = useNavigate();
+  const [openPasswordDialog, setOpenPasswordDialog] = React.useState(false);
+  const [passwordForm, setPasswordForm] = React.useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
 
   React.useEffect(() => {
     const access_token = localStorage.getItem("access_token");
@@ -76,6 +91,62 @@ function AppAppBar(props) {
     setUser(null);
     handleMenuClose();
     navigate("/");
+  };
+
+  const handlePasswordChange = (field) => (event) => {
+    setPasswordForm(prev => ({
+      ...prev,
+      [field]: event.target.value
+    }));
+    setError(''); // Clear error when user types
+  };
+
+  const handleOpenPasswordDialog = () => {
+    setOpenPasswordDialog(true);
+    setError('');
+    setSuccess('');
+    setPasswordForm({
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+  };
+
+  const handleClosePasswordDialog = () => {
+    setOpenPasswordDialog(false);
+  };
+
+  const handleSubmitPassword = async () => {
+    // Validate passwords
+    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setError('New password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      await changePassword(passwordForm);
+      
+      setSuccess('Password changed successfully');
+      setTimeout(() => {
+        handleClosePasswordDialog();
+      }, 1500);
+    } catch (error) {
+      if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError('An error occurred. Please try again');
+      }
+    }
   };
 
   const drawer = (
@@ -130,7 +201,7 @@ function AppAppBar(props) {
                       <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Role: {user.role}
                     </MenuItem>
                     <Divider sx={{ my: 1, opacity: 0.5 }} />
-                    <MenuItem>
+                    <MenuItem onClick={handleOpenPasswordDialog}>
                       <LockIcon sx={{ mr: 1 }} /> Change Password
                     </MenuItem>
                     <Divider sx={{ my: 1, opacity: 0.5 }} />
@@ -152,6 +223,55 @@ function AppAppBar(props) {
       <Box component="main" sx={{ p: 3, width: "100%" }}>
         <Toolbar />
       </Box>
+
+      {/* Password Change Dialog */}
+      <Dialog open={openPasswordDialog} onClose={handleClosePasswordDialog}>
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
+          <TextField
+            margin="dense"
+            label="Old Password"
+            type="password"
+            fullWidth
+            value={passwordForm.oldPassword}
+            onChange={handlePasswordChange('oldPassword')}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="New Password"
+            type="password"
+            fullWidth
+            value={passwordForm.newPassword}
+            onChange={handlePasswordChange('newPassword')}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Confirm New Password"
+            type="password"
+            fullWidth
+            value={passwordForm.confirmPassword}
+            onChange={handlePasswordChange('confirmPassword')}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClosePasswordDialog}>Cancel</Button>
+          <Button onClick={handleSubmitPassword} variant="contained">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

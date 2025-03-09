@@ -13,6 +13,7 @@ import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import ForgotPassword from './ForgotPassword';
 
 export default function AuthForm() {
   const navigate = useNavigate();
@@ -26,10 +27,19 @@ export default function AuthForm() {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openForgotPassword, setOpenForgotPassword] = useState(false);
 
   const validateForm = () => {
     let newErrors = {};
-    if (!formData.username.trim()) newErrors.username = "Email is required";
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!formData.username.trim()) {
+      newErrors.username = "Email is required";
+    } else if (!emailRegex.test(formData.username)) {
+      newErrors.username = "Please enter a valid email address";
+    }
+
     if (!formData.password.trim()) newErrors.password = "Password is required";
 
     if (isSignUp) {
@@ -91,6 +101,10 @@ export default function AuthForm() {
     setFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
+  const handleForgotPassword = () => {
+    setOpenForgotPassword(true);
+  };
+
   return (
     <Stack sx={{ background: "url(/bgr.png)", backgroundSize: "100% 100%", backgroundRepeat: "no-repeat" }}>
       <Box id="hero" sx={{ width: "100%" }}>
@@ -122,7 +136,7 @@ export default function AuthForm() {
               {errors.general && <Typography color="error" sx={{ mt: 1 }}>{errors.general}</Typography>}
               {!isSignUp && (
                 <Grid item>
-                  <Link href="#" variant="body2">Forgot password?</Link>
+                  <Link href="#" variant="body2" onClick={handleForgotPassword}>Forgot password?</Link>
                 </Grid>
               )}
               <Button type="submit" fullWidth variant="contained" sx={{ mt: 1, mb: 1, backgroundColor: "#aa56ff", color: "white" }}>{isSignUp ? "Sign Up" : "Sign In"}</Button>
@@ -142,6 +156,10 @@ export default function AuthForm() {
           {successMessage}
         </Alert>
       </Snackbar>
+      <ForgotPassword 
+        open={openForgotPassword}
+        onClose={() => setOpenForgotPassword(false)}
+      />
     </Stack>
   );
 }

@@ -9,88 +9,9 @@ import Grid from "@mui/material/Grid";
 import { Container } from "@mui/material";
 import PaginationButtons from "../pagination/pagination";
 import React, { useState } from "react";
-
-const data = {
-  report: [
-    {
-      username: "User1",
-      number_correct: 50,
-      number_wrong: 20,
-      precention: 100,
-    },
-    {
-      username: "User2",
-      number_correct: 100,
-      number_wrong: 80,
-      precention: 50,
-    },
-    {
-      username: "User3",
-      number_correct: 75,
-      number_wrong: 25,
-      precention: 20,
-    },
-    {
-      username: "User1",
-      number_correct: 50,
-      number_wrong: 20,
-      precention: 100,
-    },
-    {
-      username: "User2",
-      number_correct: 100,
-      number_wrong: 80,
-      precention: 50,
-    },
-    {
-      username: "User3",
-      number_correct: 75,
-      number_wrong: 25,
-      precention: 20,
-    },
-    {
-      username: "User1",
-      number_correct: 50,
-      number_wrong: 20,
-      precention: 100,
-    },
-    {
-      username: "User2",
-      number_correct: 100,
-      number_wrong: 80,
-      precention: 50,
-    },
-    {
-      username: "User3",
-      number_correct: 75,
-      number_wrong: 25,
-      precention: 20,
-    },
-    {
-      username: "User1",
-      number_correct: 50,
-      number_wrong: 20,
-      precention: 100,
-    },
-    {
-      username: "User2",
-      number_correct: 100,
-      number_wrong: 80,
-      precention: 50,
-    },
-    {
-      username: "User3",
-      number_correct: 75,
-      number_wrong: 25,
-      precention: 20,
-    },
-  ],
-  pagination: {
-    total_page: 10,
-    limit: 10,
-    page: 1,
-  },
-};
+import { fetchDashboard } from "./api";
+import { useEffect } from "react";
+import TextField from "@mui/material/TextField";
 
 const leaderboardData = [
   {
@@ -124,6 +45,26 @@ const wrongVocabularies = [
 
 export default function Dashboard() {
   const [page, setPage] = useState(1);
+  const [dashboard, setDashboard] = useState({ report: [], pagination: {} });
+  const [loading, setLoading] = useState(true); 
+  const [error, setError] = useState(null);
+  const [start_date, setStartDate] = useState("");
+  const [end_date, setEndDate] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchDashboard({ limit: 10, page, start_date, end_date });
+        setDashboard(response);
+        setLoading(false);
+      } catch (error) {
+        setError(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [page, start_date, end_date]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -148,7 +89,38 @@ export default function Dashboard() {
           >
             {/* Thêm biểu đồ vào đây */}
             <Box sx={{ my: 4 }}>
-              <ChartComponent data={data.report} />
+              <Box 
+                sx={{ 
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  mb: 2
+                }}
+              >
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Start Date"
+                    type="date"
+                    value={start_date}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    size="small"
+                  />
+                  <TextField
+                    label="End Date"
+                    type="date"
+                    value={end_date}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    size="small"
+                  />
+                </Box>
+              </Box>
+              <ChartComponent data={dashboard.report} />
             </Box>
             {/* Căn giữa tiêu đề */}
             <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -170,19 +142,19 @@ export default function Dashboard() {
             {/* Bố cục 2/3 - 1/3 */}
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <CustomTable data={data.report} />
+                <CustomTable data={dashboard.report} />
               </Grid>
               {/* Căn Pagination ra giữa */}
               <Grid item xs={12}>
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
                   <PaginationButtons
-                    pagination={data.pagination}
+                    pagination={dashboard.pagination}
                     onPageChange={handleChangePage}
                   />
                 </Box>
               </Grid>
               {/* Hai bảng nhỏ có tiêu đề và cách nhau một chút */}
-              <Grid container spacing={4} sx={{ mt: 0 }}>
+              {/* <Grid container spacing={4} sx={{ mt: 0 }}>
                 <Grid item xs={6}>
                   <Typography
                     variant="h2"
@@ -216,7 +188,7 @@ export default function Dashboard() {
                   </Typography>
                   <CustomTable data={wrongVocabularies} />
                 </Grid>
-              </Grid>
+              </Grid> */}
             </Grid>
           </Box>
         </Box>
