@@ -1,6 +1,7 @@
 import axios from "axios";
+import { HOST_API } from "../../constants/PathUri";
 
-const API_URL = "http://localhost:8000/api/flashcard-daily";
+const API_URL = `${HOST_API}/flashcard-daily`;
 
 export const fetchFlashcardDaily = async () => {
   const access_token = localStorage.getItem("access_token");

@@ -11,6 +11,7 @@ import Grammar from "./views/grammar/Grammar";
 import Flashcard from "./views/flashcard/Flashcard";
 import { Outlet } from "react-router-dom";
 import AuthProvider from "./components/hooks/AuthProvider";
+import { PATHNAME } from "./constants/PathUri";
 
 const ProtectedRoutes = () => {
   return (
@@ -28,11 +29,11 @@ const router = createBrowserRouter([
   {
     element: <ProtectedRoutes />, // Tất cả các route bên dưới đều cần AuthProvider
     children: [
-      { path: "/dashboard", element: <Dashboard /> },
-      { path: "/category", element: <Category /> },
-      { path: "/category/:id/vocabulary", element: <Vocabulary /> },
-      { path: "/grammar", element: <Grammar /> },
-      { path: "/flashcard", element: <Flashcard /> },
+      { path: PATHNAME.DASHBOARD, element: <Dashboard /> },
+      { path: PATHNAME.CATEGORY, element: <Category /> },
+      { path: PATHNAME.VOCABULARY, element: <Vocabulary /> },
+      { path: PATHNAME.GRAMMAR, element: <Grammar /> },
+      { path: PATHNAME.FLASHCARD, element: <Flashcard /> },
     ],
   },
 ]);

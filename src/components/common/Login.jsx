@@ -14,6 +14,7 @@ import Stack from "@mui/material/Stack";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import ForgotPassword from './ForgotPassword';
+import { HOST_API } from "../../constants/PathUri";
 
 export default function AuthForm() {
   const navigate = useNavigate();
@@ -61,8 +62,8 @@ export default function AuthForm() {
 
     try {
       const url = isSignUp
-        ? "http://localhost:8000/api/auth/"
-        : "http://localhost:8000/api/auth/login";
+        ? `${HOST_API}/auth/`
+        : `${HOST_API}/auth/login`;
 
       const payload = isSignUp
         ? { fullname: formData.fullname, username: formData.username, password: formData.password, role: "user" }

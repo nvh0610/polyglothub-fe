@@ -1,6 +1,7 @@
 import axios from "axios";
+import { HOST_API } from "../../constants/PathUri";
 
-const API_URL = "http://localhost:8000/api/vocabulary";
+const API_URL = `${HOST_API}/vocabulary`;
 
 export const fetchVocabularies = async ({
   limit,

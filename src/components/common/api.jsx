@@ -1,6 +1,7 @@
 import axios from "axios";
+import { HOST_API } from "../../constants/PathUri";
 
-const API_URL = "http://localhost:8000/api/auth";
+const API_URL = `${HOST_API}/auth`;
 
 export const forgotPassword = async (data) => {
   const response = await axios.post(`${API_URL}/forget-password`, {

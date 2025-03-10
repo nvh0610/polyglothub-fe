@@ -1,6 +1,7 @@
 import axios from "axios";
+import { HOST_API } from "../../constants/PathUri";
 
-const API_URL = "http://localhost:8000/api/auth";
+const API_URL = `${HOST_API}/auth`;
 
 export const changePassword = async (data) => {
   const access_token = localStorage.getItem("access_token");

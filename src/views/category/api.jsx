@@ -1,6 +1,7 @@
 import axios from "axios";
+import { HOST_API } from "../../constants/PathUri";
 
-const API_URL = "http://localhost:8000/api/category";
+const API_URL = `${HOST_API}/category`;
 
 export const fetchCategories = async ({ limit, name, page }) => {
   const access_token = localStorage.getItem("access_token");

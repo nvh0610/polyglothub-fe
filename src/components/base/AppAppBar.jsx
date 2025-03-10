@@ -29,6 +29,8 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { changePassword } from "./api";
+import { HOST_API } from "../../constants/PathUri";
+
 
 const drawerWidth = 240;
 const navItems = [
@@ -52,12 +54,13 @@ function AppAppBar(props) {
   });
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState('');
+  
 
   React.useEffect(() => {
     const access_token = localStorage.getItem("access_token");
     if (access_token) {
       axios
-        .get("http://localhost:8000/api/user/me", {
+        .get(`${HOST_API}/user/me`, {
           headers: { Authorization: `Bearer ${access_token}` },
         })
         .then((response) => {
