@@ -7,6 +7,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+ARG HOST_API
 RUN npm run build
 
 # Stage 2: Serve with Nginx
