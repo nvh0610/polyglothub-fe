@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -11,11 +10,12 @@ import Login from "../../components/common/Login";
 
 import Footer from "../../components/common/Footer";
 import AppAppBar from "../../components/base/AppAppBar";
-import carImage from "../../assets/car.png";
+import carImage from "../../assets/logo_transparent.png";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [accessToken] = useState(localStorage.getItem("access_token"));
-  const [role, setRole] = useState();
 
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
 
@@ -25,18 +25,9 @@ export default function Home() {
 
   useEffect(() => {
     if (accessToken) {
-      axios
-        .get(`http://localhost:8080/api/user/me`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-        .then((response) => {
-          setRole(response.data.authorities);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      navigate("/category"); // Chuyển hướng ngay khi có accessToken
     }
-  }, [accessToken]);
+  }, [accessToken, navigate]);
 
   return (
     <Stack
@@ -47,63 +38,63 @@ export default function Home() {
       }}
     >
       <AppAppBar currentPage="home" login={toggleLoginDialog} />
-
-      {/* Hero Section - thay đổi layout */}
-      <Box
-        sx={{
-          width: "100%",
-          minHeight: "calc(100vh - 64px)", // trừ chiều cao header nếu có
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 4,
-        }}
-      >
-        {/* Phần text (title, subtitle, button) */}
+      <Container>
+        {/* Hero Section - thay đổi layout */}
         <Box
           sx={{
-            flex: 1,
-            textAlign: { xs: "center", md: "left" },
-            mb: { xs: 4, md: 0 },
-          }}
-        >
-          <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-            Maximize Mobile Performance
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Develop, grow and optimize your digital business...
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={!accessToken ? toggleLoginDialog : () => {}}
-          >
-            Đăng nhập
-          </Button>
-          <Dialog open={openLoginDialog} onClose={toggleLoginDialog}>
-            <Login handleLoginDialogClose={toggleLoginDialog} />
-          </Dialog>
-        </Box>
-
-        <Box
-          sx={{
-            flex: 1,
+            width: "100%",
+            minHeight: "calc(65vh - 30px)", // trừ chiều cao header nếu có
             display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: "center",
             justifyContent: "center",
+            padding: 4,
           }}
         >
-          <Box sx={{ width: { lg: "100%", xs: "80%" } }}>
-            <img
-              src={carImage}
-              style={{ maxWidth: "100%", textAlign: "center" }}
-              alt="car hero"
-            />
+          {/* Phần text (title, subtitle, button) */}
+          <Box
+            sx={{
+              flex: 1,
+              textAlign: { xs: "center", md: "left" },
+              mb: { xs: 4, md: 0 },
+            }}
+          >
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
+              Maximize Mobile Performance
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Develop, grow and optimize your digital business...
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={!accessToken ? toggleLoginDialog : () => {}}
+            >
+              Sign in
+            </Button>
+            <Dialog open={openLoginDialog} onClose={toggleLoginDialog}>
+              <Login handleLoginDialogClose={toggleLoginDialog} />
+            </Dialog>
+          </Box>
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Box sx={{ width: { lg: "100%", xs: "100%"} }}>
+              <img
+                src={carImage}
+                style={{ maxWidth: "150%", textAlign: "center" }}
+                alt="car hero"
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
 
-      {/* Phần còn lại, ví dụ bảng, footer, v.v. */}
+        {/* Phần còn lại, ví dụ bảng, footer, v.v. */}
+      </Container>
       <Footer />
     </Stack>
   );

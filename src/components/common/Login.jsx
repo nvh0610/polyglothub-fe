@@ -1,7 +1,7 @@
 import * as React from "react";
-import axios from "axios";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -11,161 +11,156 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import ForgotPassword from './ForgotPassword';
+import { HOST_API } from "../../constants/PathUri";
 
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import getLPTheme from "./../base/getLPTheme";
-// import { useAuth } from "../../hooks/AuthProvider";
-
-export default function Login({ handleLoginDialogClose }) {
-  const [mode, setMode] = React.useState(getInitialMode());
-  const [loginError, setLoginError] = React.useState(false);
-  // const auth = useAuth();
-
-  const LPtheme = createTheme(getLPTheme(mode));
+export default function AuthForm() {
   const navigate = useNavigate();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    confirmPassword: "",
+    fullname: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openForgotPassword, setOpenForgotPassword] = useState(false);
 
-  const handleRegisterClick = () => {
-    navigate("/register"); // Navigate to the registration page
+  const validateForm = () => {
+    let newErrors = {};
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!formData.username.trim()) {
+      newErrors.username = "Email is required";
+    } else if (!emailRegex.test(formData.username)) {
+      newErrors.username = "Please enter a valid email address";
+    }
+
+    if (!formData.password.trim()) newErrors.password = "Password is required";
+
+    if (isSignUp) {
+      if (!formData.fullname.trim()) newErrors.fullname = "Full Name is required";
+      if (!formData.confirmPassword.trim()) {
+        newErrors.confirmPassword = "Confirm Password is required";
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  function getInitialMode() {
-    const savedMode = JSON.parse(localStorage.getItem("mode"));
-    return savedMode || "light";
-  }
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const values = {
-      username: data.get("username"),
-      password: data.get("password"),
-    };
-    console.log("values", values);
-    // auth.loginAction(values);
-    navigate("/");
+    if (!validateForm()) return;
 
-    return;
+    try {
+      const url = isSignUp
+        ? `${HOST_API}/auth/`
+        : `${HOST_API}/auth/login`;
+
+      const payload = isSignUp
+        ? { fullname: formData.fullname, username: formData.username, password: formData.password, role: "user" }
+        : { username: formData.username, password: formData.password };
+
+      const response = await axios.post(url, payload);
+
+      if (response.status === 200) {
+        if (isSignUp) {
+          setSuccessMessage("Tạo tài khoản thành công! Vui lòng đăng nhập.");
+          setOpenSnackbar(true);
+          setIsSignUp(false);
+
+          setFormData({
+            username: formData.username,
+            password: formData.password,
+            confirmPassword: "",
+            fullname: "",
+          });
+        } else {
+          localStorage.setItem("access_token", response.data.data.access_token);
+          navigate("/category");
+        }
+      }
+    } catch (error) {
+      if (error.response) {
+        const errorMessage = error.response.data?.msg || "Có lỗi xảy ra, vui lòng thử lại.";
+        setErrors({ general: errorMessage });
+      } else {
+        setErrors({ general: "Không thể kết nối đến máy chủ, vui lòng thử lại sau." });
+      }
+    }
+  };
+
+  const handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+
+  const handleForgotPassword = () => {
+    setOpenForgotPassword(true);
   };
 
   return (
-    <Stack
-      sx={{
-        background: "url(/bgr.png)",
-        backgroundSize: "100% 100%",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
+    <Stack sx={{ background: "url(/bgr.png)", backgroundSize: "100% 100%", backgroundRepeat: "no-repeat" }}>
       <Box id="hero" sx={{ width: "100%" }}>
-        <Container
-          sx={{
+        <Container sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <CssBaseline />
+          <Box sx={{
+            margin: 3,
+            padding: 5,
+            width: "100%",
+            bgcolor: "rgba(255, 255, 255, 0.3)",
+            borderRadius: "10px",
+            boxShadow: "0px 3.5px 5.5px rgba(0, 0, 0, 0.02)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-          }}
-        >
-          <CssBaseline />
-          <Box
-            sx={{
-              margin: 3,
-              padding: 5,
-              alignSelf: "center",
-              width: "100%",
-              bgcolor: "rgba(255, 255, 255, 0.3)",
-              backgroundSize: "cover",
-              borderRadius: "10px",
-              boxShadow: `0px 3.5px 5.5px rgba(0, 0, 0, 0.02)`,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              alignContent: "center",
-            }}
-          >
-            <Typography
-              component="h1"
-              variant="h5"
-              sx={{
-                mb: 1,
-              }}
-            >
-              Đăng nhập
+          }}>
+            <Typography component="h1" variant="h5" color="red" fontWeight="bold" sx={{ mb: 1 }}>
+              {isSignUp ? "SIGN UP" : "SIGN IN"}
             </Typography>
             <Box component="form" onSubmit={handleSubmit}>
-              <Typography>Tên đăng nhập</Typography>
-              <TextField
-                required
-                fullWidth
-                id="username"
-                name="username"
-                autoComplete="username"
-                autoFocus
-                sx={{
-                  mt: 1,
-                  mb: 1,
-                  boxShadow: `0px 3.5px 5.5px rgba(0, 0, 0, 0.2)`,
-                  borderRadius: 3,
-                }}
-              />
-              <Typography>Mật khẩu</Typography>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                sx={{
-                  mt: 1,
-                  mb: 1,
-                  boxShadow: `0px 3.5px 5.5px rgba(0, 0, 0, 0.2)`,
-                  borderRadius: 3,
-                }}
-              />
-              <Grid item>
-                {loginError && (
-                  <div
-                    style={{
-                      color: "red",
-                      fontSize: "14px",
-                    }}
-                  >
-                    Tên đăng nhập hoặc mật khẩu không hợp lệ!
-                  </div>
-                )}
-                <Link href="#" variant="body2">
-                  Quên mật khẩu?
-                </Link>
-              </Grid>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{
-                  mt: 1,
-                  mb: 1,
-                  backgroundColor: "primary",
-                  color: "white",
-                }}
-              >
-                Đăng nhập
-              </Button>
+              <TextField label="Email" fullWidth name="username" value={formData.username} onChange={handleChange} error={!!errors.username} helperText={errors.username} sx={{ mt: 1, mb: 1, borderRadius: 3 }} />
+              <TextField label="Password" fullWidth name="password" type="password" value={formData.password} onChange={handleChange} error={!!errors.password} helperText={errors.password} sx={{ mt: 1, mb: 1, borderRadius: 3 }} />
+              {isSignUp && (
+                <>
+                  <TextField label="Confirm Password" fullWidth name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} error={!!errors.confirmPassword} helperText={errors.confirmPassword} sx={{ mt: 1, mb: 1, borderRadius: 3 }} />
+                  <TextField label="Full Name" fullWidth name="fullname" value={formData.fullname} onChange={handleChange} error={!!errors.fullname} helperText={errors.fullname} sx={{ mt: 1, mb: 1, borderRadius: 3 }} />
+                </>
+              )}
+              {errors.general && <Typography color="error" sx={{ mt: 1 }}>{errors.general}</Typography>}
+              {!isSignUp && (
+                <Grid item>
+                  <Link href="#" variant="body2" onClick={handleForgotPassword}>Forgot password?</Link>
+                </Grid>
+              )}
+              <Button type="submit" fullWidth variant="contained" sx={{ mt: 1, mb: 1, backgroundColor: "#aa56ff", color: "white" }}>{isSignUp ? "Sign Up" : "Sign In"}</Button>
               <Grid container justifyContent="center">
                 <Grid item>
-                  <Button
-                    color="primary"
-                    variant="text"
-                    sx={{ width: "100%" }}
-                    component="button"
-                    onClick={handleRegisterClick}
-                  >
-                    {"Không có tài khoản?"}
-                    <strong style={{ margin: "5px" }}>{"  Đăng ký"}</strong>
+                  <Button color="primary" variant="text" sx={{ width: "100%" }} onClick={() => setIsSignUp(!isSignUp)}>
+                    {isSignUp ? "ALREADY HAVE AN ACCOUNT? SIGN IN" : "NO ACCOUNT? SIGN UP"}
                   </Button>
                 </Grid>
               </Grid>
             </Box>
-            <CssBaseline />
           </Box>
         </Container>
       </Box>
+      <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={() => setOpenSnackbar(false)}>
+        <Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: "100%" }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
+      <ForgotPassword 
+        open={openForgotPassword}
+        onClose={() => setOpenForgotPassword(false)}
+      />
     </Stack>
   );
 }

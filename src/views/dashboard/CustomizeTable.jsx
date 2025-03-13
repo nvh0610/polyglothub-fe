@@ -10,8 +10,9 @@ import Paper from "@mui/material/Paper";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.MuiTableCell-head`]: {
+    borderRadius: 3,
     fontSize: 17,
-    backgroundColor: "#1976d2",
+    backgroundColor: "#b471fc",
     color: theme.palette.common.white,
     textAlign: "center", // Căn giữa tiêu đề cột
   },
