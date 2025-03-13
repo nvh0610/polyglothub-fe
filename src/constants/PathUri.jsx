@@ -6,4 +6,4 @@ export const PATHNAME = {
     FLASHCARD: '/flashcard',
 }
 
-export const HOST_API = 'http://localhost:8000/api';
+export const HOST_API = process.env.HOST_API || 'http://localhost:8000/api';
