@@ -67,5 +67,5 @@ jobs:
             
             # Run new container
             sudo docker run -d --name polyflothub-fe \
-              -p 3000:80 \
+              -p 3000:3000 \
               ${DOCKER_IMAGE}
