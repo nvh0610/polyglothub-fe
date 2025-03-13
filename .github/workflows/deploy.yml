@@ -26,6 +26,8 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/polyflothub-fe:vps-${{ github.sha }}
+          build-args: |
+              HOST_API=${{ secrets.HOST_API }}
 
   deploy:
     needs: build-and-push-docker
@@ -65,6 +67,5 @@ jobs:
             
             # Run new container
             sudo docker run -d --name polyflothub-fe \
-              -e HOST_API='${{ secrets.HOST_API }}' \
-              -p 3000:3000 \
+              -p 3000:80 \
               ${DOCKER_IMAGE}
