@@ -8,6 +8,7 @@ RUN npm install
 
 COPY . .
 ARG HOST_API
+ENV REACT_APP_HOST_API=$HOST_API
 RUN npm run build
 
 # Stage 2: Serve with Nginx

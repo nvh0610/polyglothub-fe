@@ -29,7 +29,6 @@ jobs:
           build-args: |
             HOST_API=${{ secrets.HOST_API }}
 
-
   deploy:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
