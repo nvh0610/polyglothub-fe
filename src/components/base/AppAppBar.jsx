@@ -57,18 +57,34 @@ function AppAppBar(props) {
   
 
   React.useEffect(() => {
-    const access_token = localStorage.getItem("access_token");
-    if (access_token) {
-      axios
-        .get(`${HOST_API}/user/me`, {
-          headers: { Authorization: `Bearer ${access_token}` },
-        })
-        .then((response) => {
-          setUser(response.data.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching user data", error);
-        });
+    // Đầu tiên kiểm tra xem có dữ liệu người dùng trong localStorage không
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      try {
+        const parsedUserData = JSON.parse(userData);
+        setUser(parsedUserData);
+      } catch (error) {
+        console.error("Error parsing user data from localStorage", error);
+      }
+    }
+    
+    // Nếu không có dữ liệu trong localStorage hoặc có lỗi khi parse, thì gọi API
+    if (!user) {
+      const access_token = localStorage.getItem("access_token");
+      if (access_token) {
+        axios
+          .get(`${HOST_API}/user/me`, {
+            headers: { Authorization: `Bearer ${access_token}` },
+          })
+          .then((response) => {
+            setUser(response.data.data);
+            // Lưu thông tin người dùng vào localStorage để sử dụng sau này
+            localStorage.setItem("user_data", JSON.stringify(response.data.data));
+          })
+          .catch((error) => {
+            console.error("Error fetching user data", error);
+          });
+      }
     }
   }, []);
 
@@ -91,6 +107,7 @@ function AppAppBar(props) {
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("user_data"); // Xóa cả dữ liệu người dùng khi đăng xuất
     setUser(null);
     handleMenuClose();
     navigate("/");
