@@ -27,7 +27,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/polyflothub-fe:vps-${{ github.sha }}
           build-args: |
-              HOST_API=${{ secrets.HOST_API }}
+            HOST_API=${{ secrets.HOST_API }}
 
   deploy:
     needs: build-and-push-docker

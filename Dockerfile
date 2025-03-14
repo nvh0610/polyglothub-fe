@@ -1,21 +1,17 @@
-# Stage 1: Build React App
-FROM node:18-alpine AS builder
+FROM node:18-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
+
 RUN npm install
+ARG HOST_API
+ENV REACT_APP_HOST_API=$HOST_API
 
 COPY . .
+
 RUN npm run build
 
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
+EXPOSE 3000
 
-# Copy built React app từ builder stage
-COPY --from=builder /app/build /usr/share/nginx/html
-
-# Expose cổng HTTP
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]
