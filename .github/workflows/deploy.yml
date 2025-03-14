@@ -67,5 +67,6 @@ jobs:
             
             # Run new container
             sudo docker run -d --name polyflothub-fe \
+              -e HOST_API='${{ secrets.HOST_API }}' \
               -p 3000:3000 \
               ${DOCKER_IMAGE}

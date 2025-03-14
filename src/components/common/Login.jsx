@@ -85,6 +85,21 @@ export default function AuthForm() {
           });
         } else {
           localStorage.setItem("access_token", response.data.data.access_token);
+          
+          // Lấy thông tin người dùng ngay sau khi đăng nhập thành công
+          try {
+            const userResponse = await axios.get(`${HOST_API}/user/me`, {
+              headers: { Authorization: `Bearer ${response.data.data.access_token}` },
+            });
+            
+            if (userResponse.status === 200) {
+              // Lưu thông tin người dùng vào localStorage
+              localStorage.setItem("user_data", JSON.stringify(userResponse.data.data));
+            }
+          } catch (userError) {
+            console.error("Error fetching user data after login", userError);
+          }
+          
           navigate("/category");
         }
       }
