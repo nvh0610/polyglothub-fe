@@ -65,10 +65,13 @@ export default function Category() {
   
   const handleSearch = (value) => {
     setSearchTerm(value);
+    setPage(1); // Reset page về 1
+    setLimit(10); // Reset limit về giá trị mặc định nếu cần
   };
 
   const handleLimitChange = (newLimit) => {
     setLimit(newLimit);
+    setPage(1); // Reset page về 1
   };
 
   const handleNavigate = (id, name) => {
