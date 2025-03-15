@@ -74,7 +74,7 @@ const RainDrop = ({ delay, duration }) => (
 
 export default function Flashcard() {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(3);
+  const [limit, setLimit] = useState(20);
   const [selectedButton, setSelectedButton] = useState("all");
   const [showWord, setShowWord] = useState(true);
   const [showMeaning, setShowMeaning] = useState(false);

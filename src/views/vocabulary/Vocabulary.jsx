@@ -111,6 +111,15 @@ export default function Vocabulary() {
     setPage(newPage);
   };
   const handleOpenDialog = () => {
+    // Reset các state liên quan đến từ vựng
+    setWord("");
+    setIpa("");
+    setMeaning("");
+    setDescription("");
+    setUrl("");
+    setExamples([{ sentence: "", meaning: "" }]);
+    setError(false);
+
     setOpenDialog(true);
   };
 
