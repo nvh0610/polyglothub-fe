@@ -93,8 +93,13 @@ function AppAppBar(props) {
   };
 
   const handleNavigation = (path) => {
-    navigate(path);
-    setMobileOpen(false);
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      navigate(path);
+      setMobileOpen(false);
+    } else {
+      alert("Please login to access this page.");
+    }
   };
 
   const handleMenuOpen = (event) => {
@@ -201,7 +206,17 @@ function AppAppBar(props) {
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: "1rem"}}>
               {navItems.map((item) => (
-                <Button key={item.label} onClick={() => handleNavigation(item.path)} sx={{ color: "#fff", fontSize: "1rem" }}>
+                <Button
+                  key={item.label}
+                  onClick={() => handleNavigation(item.path)}
+                  sx={{
+                    color: "#fff",
+                    fontSize: "1rem",
+                    '&:hover': {
+                      backgroundColor: "#FEB2B2", // Màu nền khi hover
+                    }
+                  }}
+                >
                   {item.label}
                 </Button>
               ))}

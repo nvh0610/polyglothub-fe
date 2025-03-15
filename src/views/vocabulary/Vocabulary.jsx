@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import {
   Grid,
@@ -49,6 +49,7 @@ const speakWord = (word) => {
 
 export default function Vocabulary() {
   const { id } = useParams();
+  const location = useLocation();
   const [page, setPage] = useState(1);
   const [type, setType] = useState("");
   const [data_type, setDataType] = useState("");
@@ -70,6 +71,7 @@ export default function Vocabulary() {
     pagination: {},
   });
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false); // Thêm state cho delete dialog
+  const categoryName = location.state?.categoryName || 'Default Category Name';
 
   const handleOpenMenu = (event, vocabulary) => {
     setMenuAnchor(event.currentTarget);
@@ -151,7 +153,7 @@ export default function Vocabulary() {
     >
       <AppAppBar name="nvh0610" currentPage="plan" />
       <Container maxWidth="lg">
-        <h1>Vocabulary List</h1>
+        <h1>{categoryName}</h1>
         {/* Select Boxes + Search */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={6} sm={1.5}>

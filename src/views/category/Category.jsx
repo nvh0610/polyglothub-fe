@@ -71,8 +71,8 @@ export default function Category() {
     setLimit(newLimit);
   };
 
-  const handleNavigate = (id) => {
-    navigate(`/category/${id}/vocabulary`);
+  const handleNavigate = (id, name) => {
+    navigate(`/category/${id}/vocabulary`, { state: { categoryName: name } });
   };
 
   const handleCloseDialog = () => {
@@ -356,7 +356,7 @@ export default function Category() {
                       fontStyle: "arial",
                       mb: 1, // Thêm margin bottom để không đè lên created by
                     }}
-                    onClick={() => handleNavigate(item.id)}
+                    onClick={() => handleNavigate(item.id, item.name)}
                   >
                     Get Started
                   </Button>
