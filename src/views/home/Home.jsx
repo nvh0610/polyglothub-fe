@@ -59,11 +59,11 @@ export default function Home() {
               mb: { xs: 4, md: 0 },
             }}
           >
-            <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-              Maximize Mobile Performance
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
+              Studying is not about time, it's about effort
             </Typography>
             <Typography variant="body1" sx={{ mb: 2 }}>
-              Develop, grow and optimize your digital business...
+              Work hard, stay humble, be kind...
             </Typography>
             <Button
               variant="contained"
